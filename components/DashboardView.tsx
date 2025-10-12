@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ExpenseChart from './ExpenseChart';
 import { getCategoryIcon } from '../constants';
-import type { Expense, Budget } from '../types';
+import type { Expense, Budget, Category } from '../types';
 
 const formatCurrency = (amount: number) => `S/. ${amount.toFixed(2)}`;
 
@@ -24,10 +24,10 @@ const SummaryCard: React.FC<{ title: string; value: string | number; color?: 'pr
     );
 };
 
-const RecentTransactionItem: React.FC<{ transaction: Expense }> = ({ transaction }) => (
+const RecentTransactionItem: React.FC<{ transaction: Expense, category?: Category }> = ({ transaction, category }) => (
   <div className="flex items-center justify-between py-3">
     <div className="flex items-center space-x-4">
-      {getCategoryIcon(transaction.category, 'sm')}
+      {getCategoryIcon(transaction.category, category?.color || 'gray', 'sm')}
       <div>
         <p className="font-semibold text-text-primary text-sm">{transaction.description || transaction.category}</p>
         <p className="text-xs text-text-secondary">{new Date(transaction.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</p>
@@ -44,7 +44,8 @@ const DashboardView: React.FC<{
     expenses: Expense[]; 
     budgets: Budget[]; 
     username: string | null; 
-}> = ({ expenses, budgets, username }) => {
+    categories: Category[];
+}> = ({ expenses, budgets, username, categories }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(new Date().toISOString().split('T')[0]);
   
@@ -110,6 +111,7 @@ const DashboardView: React.FC<{
           <div className="lg:col-span-3 bg-surface p-6 rounded-xl border border-border shadow-sm">
               <ExpenseChart 
                 expenses={expenses}
+                categories={categories}
                 currentDate={currentDate}
                 setCurrentDate={setCurrentDate}
                 selectedDate={selectedDate}
@@ -123,9 +125,10 @@ const DashboardView: React.FC<{
               </div>
               {recentTransactions.length > 0 ? (
                 <div className="divide-y divide-border">
-                  {recentTransactions.map(transaction => (
-                    <RecentTransactionItem key={transaction.id} transaction={transaction} />
-                  ))}
+                  {recentTransactions.map(transaction => {
+                    const category = categories.find(c => c.name === transaction.category);
+                    return <RecentTransactionItem key={transaction.id} transaction={transaction} category={category} />
+                  })}
                 </div>
               ) : (
                   <div className="text-center py-10 h-full flex flex-col justify-center">

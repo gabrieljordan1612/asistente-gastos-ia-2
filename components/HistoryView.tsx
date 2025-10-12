@@ -1,17 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import type { Expense } from '../types';
+import type { Expense, Category } from '../types';
 import { getCategoryIcon } from '../constants';
 
 const formatCurrency = (amount: number) => `S/. ${amount.toFixed(2)}`;
 
-const HistoryView: React.FC<{ expenses: Expense[], requestDeleteExpense: (id: number) => void }> = ({ expenses, requestDeleteExpense }) => {
+const HistoryView: React.FC<{ expenses: Expense[], requestDeleteExpense: (id: number) => void, categories: Category[] }> = ({ expenses, requestDeleteExpense, categories }) => {
     const [filter, setFilter] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
 
     const filteredExpenses = useMemo(() => {
         let tempExpenses = expenses;
 
-        // Text filter
         if (filter) {
             tempExpenses = tempExpenses.filter(expense =>
                 (expense.description || '').toLowerCase().includes(filter.toLowerCase()) ||
@@ -19,7 +18,6 @@ const HistoryView: React.FC<{ expenses: Expense[], requestDeleteExpense: (id: nu
             );
         }
 
-        // Single date filter
         if (selectedDate) {
             tempExpenses = tempExpenses.filter(expense => expense.date === selectedDate);
         }
@@ -69,24 +67,27 @@ const HistoryView: React.FC<{ expenses: Expense[], requestDeleteExpense: (id: nu
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {filteredExpenses.length > 0 ? filteredExpenses.map((expense) => (
-                            <tr key={expense.id} className="hover:bg-bkg transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">{expense.date}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text-primary">{expense.description || '-'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                                    <div className="flex items-center space-x-2">
-                                        {getCategoryIcon(expense.category)}
-                                        <span>{expense.category}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right text-red-500">{formatCurrency(expense.amount)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onClick={() => requestDeleteExpense(expense.id)} className="text-red-500 hover:text-red-700" aria-label={`Eliminar gasto: ${expense.description || expense.category}`}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        )) : (
+                        {filteredExpenses.length > 0 ? filteredExpenses.map((expense) => {
+                            const category = categories.find(c => c.name === expense.category);
+                            return (
+                                <tr key={expense.id} className="hover:bg-bkg transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">{expense.date}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text-primary">{expense.description || '-'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                                        <div className="flex items-center space-x-2">
+                                            {getCategoryIcon(expense.category, category?.color || 'gray')}
+                                            <span>{expense.category}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-right text-red-500">{formatCurrency(expense.amount)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button onClick={() => requestDeleteExpense(expense.id)} className="text-red-500 hover:text-red-700" aria-label={`Eliminar gasto: ${expense.description || expense.category}`}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
+                        }) : (
                             <tr>
                                 <td colSpan={5} className="text-center py-10 text-text-secondary">No se encontraron gastos con los filtros aplicados.</td>
                             </tr>

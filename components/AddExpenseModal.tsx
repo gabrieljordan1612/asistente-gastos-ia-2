@@ -1,36 +1,23 @@
-import React, { useState, useCallback, ChangeEvent } from 'react';
+import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import { extractExpenseDataFromImage } from '../services/geminiService';
-import { PREDEFINED_CATEGORIES } from '../constants';
 import Spinner from './Spinner';
-import type { Expense } from '../types';
+import type { Expense, Category } from '../types';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddExpense: (expense: Omit<Expense, 'id' | 'user_id' | 'created_at'>) => void;
+  categories: Category[];
 }
 
 type Status = 'idle' | 'analyzing' | 'manual' | 'confirm';
 
-const fileToGenerativePart = async (file: File) => {
-  const base64EncodedDataPromise = new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-    reader.readAsDataURL(file);
-  });
-  return {
-    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
-  };
-};
-
-const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAddExpense }) => {
+const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAddExpense, categories }) => {
   const [status, setStatus] = useState<Status>('idle');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(PREDEFINED_CATEGORIES[0]);
-  const [customCategory, setCustomCategory] = useState('');
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [category, setCategory] = useState(categories.length > 0 ? categories[0].name : '');
   const [error, setError] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -38,13 +25,19 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
     setStatus('idle');
     setAmount('');
     setDate(new Date().toISOString().split('T')[0]);
-    setCategory(PREDEFINED_CATEGORIES[0]);
-    setCustomCategory('');
-    setIsCustomCategory(false);
+    setCategory(categories.length > 0 ? categories[0].name : '');
     setError('');
     setImagePreview(null);
     setDescription('');
-  }, []);
+  }, [categories]);
+  
+  // Update default category if categories list changes
+  // FIX: Imported `useEffect` from `react` to resolve `Cannot find name 'useEffect'` error.
+  useEffect(() => {
+      if (categories.length > 0) {
+          setCategory(categories[0].name);
+      }
+  }, [categories]);
 
   const handleClose = () => {
     resetForm();
@@ -69,7 +62,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
           setDescription(result.description || '');
           setStatus('confirm');
         } else {
-          setError('No pudimos leer los datos. Por favor, ingrésalos manually.');
+          setError('No pudimos leer los datos. Por favor, ingrésalos manualmente.');
           setStatus('manual');
         }
       };
@@ -83,14 +76,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalCategory = isCustomCategory ? customCategory : category;
-    if (!amount || !finalCategory || !date) {
+    if (!amount || !category || !date) {
         setError('Por favor, completa todos los campos requeridos.');
         return;
     }
     onAddExpense({
       amount: parseFloat(amount),
-      category: finalCategory,
+      category: category,
       date,
       description
     });
@@ -141,25 +133,14 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
                 <div>
                     <label className="block text-sm font-medium text-text-secondary mb-2">Categoría</label>
                     <div className="grid grid-cols-3 gap-2">
-                        {PREDEFINED_CATEGORIES.map(cat => (
-                            <button key={cat} type="button" onClick={() => { setCategory(cat); setIsCustomCategory(false); }}
-                                className={`py-2 px-3 text-sm rounded-md transition-all ${!isCustomCategory && category === cat ? 'bg-primary text-white font-semibold' : 'bg-gray-100 hover:bg-gray-200 text-text-primary'}`}>
-                                {cat}
+                        {categories.map(cat => (
+                            <button key={cat.id} type="button" onClick={() => setCategory(cat.name)}
+                                className={`py-2 px-3 text-sm rounded-md transition-all ${category === cat.name ? 'bg-primary text-white font-semibold' : 'bg-gray-100 hover:bg-gray-200 text-text-primary'}`}>
+                                {cat.name}
                             </button>
                         ))}
-                        <button type="button" onClick={() => setIsCustomCategory(true)}
-                            className={`py-2 px-3 text-sm rounded-md transition-all ${isCustomCategory ? 'bg-primary text-white font-semibold' : 'bg-gray-100 hover:bg-gray-200 text-text-primary'}`}>
-                            Otro...
-                        </button>
                     </div>
                 </div>
-                {isCustomCategory && (
-                    <div>
-                        <label htmlFor="customCategory" className="block text-sm font-medium text-text-secondary">Categoría Personalizada</label>
-                        <input type="text" id="customCategory" value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} required
-                            className="mt-1 block w-full bg-bkg border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
-                    </div>
-                )}
             </div>
             
             <div className="mt-6 flex justify-end space-x-3">

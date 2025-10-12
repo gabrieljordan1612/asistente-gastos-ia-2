@@ -10,7 +10,7 @@ import AddExpenseModal from './components/AddExpenseModal';
 import ConfirmationModal from './components/ConfirmationModal';
 import { getExpenses, addExpense, deleteExpense, getBudgets, deleteBudget, getIncome, addIncome, deleteIncome, upsertBudget } from './services/supabaseService';
 // FIX: Import the View type from the central types file.
-import type { Expense, Budget, Income, Plan, View } from './types';
+import type { Expense, Budget, Income, Plan, View, Category } from './types';
 import LandingPage from './components/LandingPage';
 import SignInPage from './components/SignInPage';
 import SignUpPage from './components/SignUpPage';
@@ -23,9 +23,33 @@ import OffersView from './components/OffersView';
 import IncomeView from './components/IncomeView';
 import AddIncomeModal from './components/AddIncomeModal';
 import BudgetSidebar from './components/BudgetSidebar';
+import { PREDEFINED_CATEGORIES } from './constants';
 
 
-// FIX: Removed local View type definition, as it is now imported from types.ts.
+const defaultCategories: Category[] = [
+    { id: '1', name: 'Comida', color: 'orange', isPredefined: true },
+    { id: '2', name: 'Transporte', color: 'blue', isPredefined: true },
+    { id: '3', name: 'Salud', color: 'red', isPredefined: true },
+    { id: '4', name: 'Ropa', color: 'purple', isPredefined: true },
+    { id: '5', name: 'Entretenimiento', color: 'yellow', isPredefined: true },
+    { id: '6', name: 'Servicios', color: 'teal', isPredefined: true },
+];
+
+const getInitialCategories = (): Category[] => {
+    try {
+        const stored = localStorage.getItem('user-categories');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Basic validation
+            if (Array.isArray(parsed) && parsed.every(c => 'id' in c && 'name' in c && 'color' in c)) {
+                 return parsed;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to parse categories from localStorage", e);
+    }
+    return defaultCategories;
+};
   
 type AuthView = 
   | 'landing' 
@@ -51,6 +75,7 @@ const App: React.FC = () => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [budgets, setBudgets] = useState<Budget[]>([]);
     const [income, setIncome] = useState<Income[]>([]);
+    const [categories, setCategories] = useState<Category[]>(getInitialCategories);
 
     // UI State
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -58,10 +83,19 @@ const App: React.FC = () => {
     const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
     const [isBudgetSidebarOpen, setIsBudgetSidebarOpen] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<{ type: 'expense' | 'budget' | 'income', id: number } | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<{ type: 'expense' | 'budget' | 'income' | 'category', id: number | string } | null>(null);
     
     // For checkout page
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+    // Persist categories to localStorage whenever they change
+    useEffect(() => {
+        try {
+            localStorage.setItem('user-categories', JSON.stringify(categories));
+        } catch (e) {
+            console.error("Failed to save categories to localStorage", e);
+        }
+    }, [categories]);
     
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -118,6 +152,31 @@ const App: React.FC = () => {
         setAuthView('landing');
     };
 
+    // --- Category Handlers ---
+    const handleSaveCategory = (category: Category) => {
+        setCategories(prev => {
+            const existingIndex = prev.findIndex(c => c.id === category.id);
+            if (existingIndex > -1) {
+                const updated = [...prev];
+                updated[existingIndex] = category;
+                return updated;
+            } else {
+                return [...prev, category];
+            }
+        });
+    };
+    
+    const requestDeleteCategory = (id: string) => {
+        const categoryToDelete = categories.find(c => c.id === id);
+        if (categoryToDelete?.isPredefined) {
+            alert("No se pueden eliminar las categorías predefinidas.");
+            return;
+        }
+        setItemToDelete({ type: 'category', id });
+        setIsConfirmationModalOpen(true);
+    };
+
+
     // --- Expense Handlers ---
     const handleAddExpense = async (expense: Omit<Expense, 'id' | 'user_id' | 'created_at'>) => {
         const newExpense = await addExpense(expense);
@@ -137,7 +196,6 @@ const App: React.FC = () => {
         if (newIncome) {
             setIncome(prev => [newIncome, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
             
-            // Sumar el ingreso al presupuesto del mes correspondiente
             const incomeMonth = incomeItem.date.slice(0, 7);
             const existingBudget = budgets.find(b => b.month === incomeMonth && b.category === 'General');
             const newAmount = (existingBudget ? existingBudget.amount : 0) + incomeItem.amount;
@@ -150,7 +208,7 @@ const App: React.FC = () => {
             
             const savedBudget = await upsertBudget(budgetToSave);
             if (savedBudget) {
-                fetchData(); // Recargar todo para mantener consistencia
+                fetchData(); 
             }
         }
     };
@@ -171,13 +229,15 @@ const App: React.FC = () => {
         if (!itemToDelete) return;
 
         if (itemToDelete.type === 'expense') {
-            const success = await deleteExpense(itemToDelete.id);
+            const success = await deleteExpense(itemToDelete.id as number);
             if (success) setExpenses(prev => prev.filter(e => e.id !== itemToDelete.id));
         } else if (itemToDelete.type === 'budget') {
-            const success = await deleteBudget(itemToDelete.id);
+            const success = await deleteBudget(itemToDelete.id as number);
             if (success) setBudgets(prev => prev.filter(b => b.id !== itemToDelete.id));
+        } else if (itemToDelete.type === 'category') {
+            setCategories(prev => prev.filter(c => c.id !== itemToDelete.id));
+            // You might want to re-categorize expenses using this category
         } else if (itemToDelete.type === 'income') {
-            // Find the full income object before deleting it
             const incomeToDelete = income.find(i => i.id === itemToDelete.id);
             if (!incomeToDelete) {
                 console.error("Could not find income to delete in local state.");
@@ -186,13 +246,11 @@ const App: React.FC = () => {
                 return;
             }
             
-            const success = await deleteIncome(itemToDelete.id);
+            const success = await deleteIncome(itemToDelete.id as number);
 
             if (success) {
-                // 1. Update local income state
                 setIncome(prev => prev.filter(i => i.id !== itemToDelete.id));
 
-                // 2. Find and update the corresponding budget
                 const incomeMonth = incomeToDelete.date.slice(0, 7);
                 const existingBudget = budgets.find(b => b.month === incomeMonth && b.category === 'General');
                 
@@ -201,12 +259,11 @@ const App: React.FC = () => {
                     const budgetToSave = {
                         month: incomeMonth,
                         category: 'General',
-                        amount: newAmount < 0 ? 0 : newAmount, // Ensure budget doesn't go negative
+                        amount: newAmount < 0 ? 0 : newAmount,
                     };
                     
                     const savedBudget = await upsertBudget(budgetToSave);
                     if (savedBudget) {
-                        // 3. Update local budget state with the new value from the DB
                         setBudgets(prev => 
                             prev.map(b => 
                                 (b.month === incomeMonth && b.category === 'General') 
@@ -232,13 +289,18 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (currentView) {
             case 'dashboard':
-                return <DashboardView expenses={expenses} budgets={budgets} username={username} />;
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} />;
             case 'history':
-                return <HistoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} />;
+                return <HistoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} categories={categories} />;
             case 'categories':
-                 return <CategoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} />;
+                 return <CategoryView 
+                    categories={categories} 
+                    onSaveCategory={handleSaveCategory} 
+                    onDeleteCategory={requestDeleteCategory}
+                    expenses={expenses} 
+                 />;
             case 'budgets':
-                return <BudgetView expenses={expenses} onBudgetsUpdate={fetchData} requestDeleteBudget={requestDeleteBudget} />;
+                return <BudgetView expenses={expenses} onBudgetsUpdate={fetchData} requestDeleteBudget={requestDeleteBudget} categories={categories} />;
             case 'income':
                 return <IncomeView income={income} requestDeleteIncome={requestDeleteIncome} onAddIncomeClick={() => setIsAddIncomeModalOpen(true)}/>;
             case 'reports':
@@ -248,7 +310,7 @@ const App: React.FC = () => {
             case 'settings':
                 return <SettingsView />;
             default:
-                return <DashboardView expenses={expenses} budgets={budgets} username={username} />;
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} />;
         }
     };
     
@@ -336,6 +398,7 @@ const App: React.FC = () => {
                 isOpen={isAddExpenseModalOpen}
                 onClose={() => setIsAddExpenseModalOpen(false)}
                 onAddExpense={handleAddExpense}
+                categories={categories}
             />
             <AddIncomeModal
                 isOpen={isAddIncomeModalOpen}
@@ -346,7 +409,7 @@ const App: React.FC = () => {
                 isOpen={isConfirmationModalOpen}
                 onClose={() => setIsConfirmationModalOpen(false)}
                 onConfirm={handleConfirmDelete}
-                title={`Eliminar ${itemToDelete?.type === 'expense' ? 'Gasto' : itemToDelete?.type === 'budget' ? 'Presupuesto' : 'Ingreso'}`}
+                title={`Eliminar ${itemToDelete?.type}`}
                 message="¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer."
             />
         </div>

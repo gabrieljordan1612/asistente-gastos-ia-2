@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getBudgets, upsertBudget } from '../services/supabaseService';
-import type { Expense, Budget } from '../types';
+import type { Expense, Budget, Category } from '../types';
 import { getCategoryIcon, PREDEFINED_CATEGORIES } from '../constants';
 import SetBudgetModal from './SetBudgetModal';
 import Spinner from './Spinner';
@@ -29,7 +29,7 @@ const BudgetProgressBar: React.FC<{ spent: number; total: number }> = ({ spent, 
     );
 };
 
-const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, requestDeleteBudget: (id: number) => void }> = ({ expenses, onBudgetsUpdate, requestDeleteBudget }) => {
+const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudgetsUpdate: () => void, requestDeleteBudget: (id: number) => void }> = ({ expenses, categories, onBudgetsUpdate, requestDeleteBudget }) => {
     const [budgets, setBudgets] = useState<Budget[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
@@ -39,7 +39,6 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
 
     const fetchBudgetsForMonth = async () => {
         setLoading(true);
-        // FIX: The `getBudgets` function does not accept any arguments. It fetches all budgets for the user.
         const data = await getBudgets();
         setBudgets(data || []);
         setLoading(false);
@@ -55,7 +54,6 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
         totalSpent,
         spentByCategory,
     } = useMemo(() => {
-        // FIX: Since all budgets are fetched, they need to be filtered for the current month.
         const budgetsForMonth = budgets.filter(b => b.month === currentMonth);
         const mainBudget = budgetsForMonth.find(b => b.category === 'General') || null;
         const categoryBudgets = budgetsForMonth.filter(b => b.category !== 'General').sort((a,b) => PREDEFINED_CATEGORIES.indexOf(a.category) - PREDEFINED_CATEGORIES.indexOf(b.category));
@@ -75,12 +73,12 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
     
     const canAddMoreCategories = useMemo(() => {
         const usedCategories = categoryBudgets.map(b => b.category);
-        return PREDEFINED_CATEGORIES.some(c => !usedCategories.includes(c));
-    }, [categoryBudgets]);
+        return categories.some(c => !usedCategories.includes(c.name));
+    }, [categoryBudgets, categories]);
 
     const handleOpenModal = (type: 'General' | 'Category', budget?: Omit<Budget, 'id' | 'user_id' | 'month'> | null) => {
         if (type === 'Category' && !budget && !canAddMoreCategories) {
-            return; // No abrir el modal si no hay más categorías para agregar
+            return;
         }
         setModalType(type);
         setBudgetToEdit(budget || null);
@@ -95,7 +93,7 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
         const savedBudget = await upsertBudget(budgetToSave);
         if (savedBudget) {
             await fetchBudgetsForMonth();
-            onBudgetsUpdate(); // Notifica al padre para que recargue los presupuestos
+            onBudgetsUpdate(); 
         }
         setIsModalOpen(false);
     };
@@ -110,7 +108,6 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
         <div>
             <h1 className="text-3xl font-bold text-text-primary mb-6">Presupuestos</h1>
             
-            {/* Tarjeta de Presupuesto Principal */}
             <div className="bg-surface border border-border rounded-xl shadow-sm p-6 mb-8">
                 {mainBudget ? (
                     <div>
@@ -144,7 +141,6 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
                 )}
             </div>
             
-            {/* Sección de Presupuestos por Categoría */}
             <div>
                  <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-text-primary">Presupuestos por Categoría</h2>
@@ -159,11 +155,12 @@ const BudgetView: React.FC<{ expenses: Expense[], onBudgetsUpdate: () => void, r
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {categoryBudgets.map(budget => {
                             const spent = spentByCategory[budget.category] || 0;
+                            const category = categories.find(c => c.name === budget.category);
                             return (
                                 <div key={budget.id} className="bg-surface border border-border rounded-xl p-4">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center space-x-3">
-                                            {getCategoryIcon(budget.category)}
+                                            {getCategoryIcon(budget.category, category?.color || 'gray')}
                                             <span className="font-bold text-text-primary">{budget.category}</span>
                                         </div>
                                          <div className="flex items-center space-x-2">

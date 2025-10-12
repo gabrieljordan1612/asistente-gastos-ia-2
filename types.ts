@@ -39,6 +39,14 @@ export interface Plan {
   price: string;
 }
 
+export interface Category {
+  id: string; // Using string for client-side unique IDs (e.g., UUID)
+  name: string;
+  color: string; // e.g., "orange", "blue"
+  isPredefined: boolean;
+}
+
+
 // FIX: Define and export the View type to be used across components.
 export type View =
   | 'dashboard'

@@ -1,10 +1,22 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import type { Expense } from '../types';
+import type { Expense, Category } from '../types';
+import { PALETTE } from '../constants';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
 const formatCurrency = (value: number) => `S/. ${value.toFixed(2)}`;
+
+const paletteHex: {[key: string]: string} = {
+    orange: '#F97316',
+    blue: '#3B82F6',
+    red: '#EF4444',
+    purple: '#A855F7',
+    yellow: '#EAB308',
+    teal: '#14B8A6',
+    pink: '#EC4899',
+    green: '#22C55E',
+    gray: '#6B7280'
+};
 
 const CustomTooltip = ({ active, payload, label, chartMode }: any) => {
     if (active && payload && payload.length) {
@@ -21,12 +33,14 @@ const CustomTooltip = ({ active, payload, label, chartMode }: any) => {
 
 const ExpenseCalendarChart: React.FC<{
     expenses: Expense[];
+    categories: Category[];
     currentDate: Date;
     setCurrentDate: (date: Date) => void;
     selectedDate: string | null;
     setSelectedDate: (date: string | null) => void;
     chartMode?: 'byCategory' | 'byDay';
-}> = ({ expenses, currentDate, setCurrentDate, selectedDate, setSelectedDate, chartMode = 'byCategory' }) => {
+    barColor?: string;
+}> = ({ expenses, categories, currentDate, setCurrentDate, selectedDate, setSelectedDate, chartMode = 'byCategory', barColor }) => {
     
     const expensesByDay = useMemo(() => {
         const map = new Map<string, Expense[]>();
@@ -72,6 +86,8 @@ const ExpenseCalendarChart: React.FC<{
         if (chartMode !== 'byCategory' || !selectedDate) return [];
         const selectedDayExpenses = expensesByDay.get(selectedDate) || [];
         if (selectedDayExpenses.length === 0) return [];
+
+        const categoryColorMap = new Map(categories.map(c => [c.name, paletteHex[c.color] || paletteHex.gray]));
         
         const dataByCategory: { [key: string]: number } = {};
         selectedDayExpenses.forEach(expense => {
@@ -82,8 +98,9 @@ const ExpenseCalendarChart: React.FC<{
         return Object.entries(dataByCategory).map(([name, amount]) => ({
             name,
             amount,
+            color: categoryColorMap.get(name) || paletteHex.gray,
         })).sort((a,b) => b.amount - a.amount);
-    }, [selectedDate, expensesByDay, chartMode]);
+    }, [selectedDate, expensesByDay, chartMode, categories]);
     
     const totalForSelectedDay = useMemo(() => {
         if (!selectedDate) return 0;
@@ -137,7 +154,7 @@ const ExpenseCalendarChart: React.FC<{
                                 <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F9FAFB'}}/>
                                 <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                                     {categoryChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Bar>
                             </BarChart>
@@ -165,7 +182,7 @@ const ExpenseCalendarChart: React.FC<{
                             <XAxis dataKey="name" stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} interval={0} />
                             <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `S/.${value}`} width={80} />
                             <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F9FAFB'}}/>
-                            <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="amount" fill={barColor && paletteHex[barColor] ? paletteHex[barColor] : '#3B82F6'} radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -194,8 +211,11 @@ const ExpenseCalendarChart: React.FC<{
                     const dateStr = `${year}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const hasExpenses = expensesByDay.has(dateStr);
                     const isSelected = selectedDate === dateStr;
+                    
+                    const isClickable = chartMode === 'byCategory';
+                    
                     return (
-                        <div key={day} onClick={() => handleDayClick(dateStr)} className="cursor-pointer p-2 rounded-lg transition-colors hover:bg-primary/10" role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleDayClick(dateStr)}>
+                        <div key={day} onClick={() => isClickable && handleDayClick(dateStr)} className={`p-2 rounded-lg transition-colors ${isClickable ? 'cursor-pointer hover:bg-primary/10' : ''}`} role={isClickable ? "button" : undefined} tabIndex={isClickable ? 0 : undefined} onKeyDown={(e) => isClickable && e.key === 'Enter' && handleDayClick(dateStr)}>
                             <div className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full relative ${isSelected ? 'bg-primary text-white font-bold' : 'text-text-primary'}`}>
                                 {day}
                                 {hasExpenses && <div className={`absolute bottom-0 h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}`}></div>}
