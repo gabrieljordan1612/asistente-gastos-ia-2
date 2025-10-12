@@ -1,0 +1,5 @@
+{
+  "name": "Copy of Analizador de Gastos IA",
+  "description": "Una aplicación web elegante para analizar y categorizar tus gastos diarios subiendo capturas de pantalla de pagos, fotos de boletas o agregando gastos manualmente. La IA extrae la información para un seguimiento financiero sin esfuerzo.",
+  "requestFramePermissions": []
+}

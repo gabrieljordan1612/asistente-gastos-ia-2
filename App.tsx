@@ -1,0 +1,356 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from './services/supabaseClient';
+import type { Session, User } from '@supabase/supabase-js';
+import LeftSidebar from './components/LeftSidebar';
+import DashboardView from './components/DashboardView';
+import HistoryView from './components/HistoryView';
+import BudgetView from './components/BudgetView';
+import SettingsView from './components/SettingsView';
+import AddExpenseModal from './components/AddExpenseModal';
+import ConfirmationModal from './components/ConfirmationModal';
+import { getExpenses, addExpense, deleteExpense, getBudgets, deleteBudget, getIncome, addIncome, deleteIncome, upsertBudget } from './services/supabaseService';
+// FIX: Import the View type from the central types file.
+import type { Expense, Budget, Income, Plan, View } from './types';
+import LandingPage from './components/LandingPage';
+import SignInPage from './components/SignInPage';
+import SignUpPage from './components/SignUpPage';
+import AwaitingConfirmationPage from './components/AwaitingConfirmationPage';
+import ResetPasswordPage from './components/ResetPasswordPage';
+import CheckoutPage from './components/CheckoutPage';
+import CategoryView from './components/CategoryView';
+import ReportsView from './components/ReportsView';
+import OffersView from './components/OffersView';
+import IncomeView from './components/IncomeView';
+import AddIncomeModal from './components/AddIncomeModal';
+import BudgetSidebar from './components/BudgetSidebar';
+
+
+// FIX: Removed local View type definition, as it is now imported from types.ts.
+  
+type AuthView = 
+  | 'landing' 
+  | 'signIn' 
+  | 'signUp' 
+  | 'awaitingConfirmation' 
+  | 'resetPassword' 
+  | 'checkout';
+
+type Notification = { type: 'success' | 'error'; message: string } | null;
+
+
+const App: React.FC = () => {
+    const [session, setSession] = useState<Session | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [currentView, setCurrentView] = useState<View>('dashboard');
+    const [authView, setAuthView] = useState<AuthView>('landing');
+    const [notification, setNotification] = useState<Notification>(null);
+    
+    // App Data State
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [budgets, setBudgets] = useState<Budget[]>([]);
+    const [income, setIncome] = useState<Income[]>([]);
+
+    // UI State
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+    const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
+    const [isBudgetSidebarOpen, setIsBudgetSidebarOpen] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ type: 'expense' | 'budget' | 'income', id: number } | null>(null);
+    
+    // For checkout page
+    const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+    
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setUsername(session?.user?.user_metadata?.username ?? session?.user?.email ?? null);
+            
+            if (_event === 'PASSWORD_RECOVERY') {
+                setAuthView('resetPassword');
+            }
+            
+            setLoading(false);
+        });
+
+        // Initial check
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setUsername(session?.user?.user_metadata?.username ?? session?.user?.email ?? null);
+            setLoading(false);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    const fetchData = useCallback(async () => {
+        if (!user) return;
+        setLoading(true);
+        const [expensesData, budgetsData, incomeData] = await Promise.all([
+            getExpenses(),
+            getBudgets(),
+            getIncome()
+        ]);
+        setExpenses(expensesData?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || []);
+        setBudgets(budgetsData || []);
+        setIncome(incomeData?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || []);
+        setLoading(false);
+    }, [user]);
+
+    useEffect(() => {
+        if(session) {
+            fetchData();
+        }
+    }, [session, fetchData]);
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        setExpenses([]);
+        setBudgets([]);
+        setIncome([]);
+        setCurrentView('dashboard');
+        setAuthView('landing');
+    };
+
+    // --- Expense Handlers ---
+    const handleAddExpense = async (expense: Omit<Expense, 'id' | 'user_id' | 'created_at'>) => {
+        const newExpense = await addExpense(expense);
+        if (newExpense) {
+            setExpenses(prev => [newExpense, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        }
+    };
+
+    const requestDeleteExpense = (id: number) => {
+        setItemToDelete({ type: 'expense', id });
+        setIsConfirmationModalOpen(true);
+    };
+
+    // --- Income Handlers ---
+    const handleAddIncome = async (incomeItem: Omit<Income, 'id' | 'user_id' | 'created_at'>) => {
+        const newIncome = await addIncome(incomeItem);
+        if (newIncome) {
+            setIncome(prev => [newIncome, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+            
+            // Sumar el ingreso al presupuesto del mes correspondiente
+            const incomeMonth = incomeItem.date.slice(0, 7);
+            const existingBudget = budgets.find(b => b.month === incomeMonth && b.category === 'General');
+            const newAmount = (existingBudget ? existingBudget.amount : 0) + incomeItem.amount;
+            
+            const budgetToSave = {
+                month: incomeMonth,
+                category: 'General',
+                amount: newAmount,
+            };
+            
+            const savedBudget = await upsertBudget(budgetToSave);
+            if (savedBudget) {
+                fetchData(); // Recargar todo para mantener consistencia
+            }
+        }
+    };
+
+    const requestDeleteIncome = (id: number) => {
+        setItemToDelete({ type: 'income', id });
+        setIsConfirmationModalOpen(true);
+    };
+
+    // --- Budget Handlers ---
+    const requestDeleteBudget = (id: number) => {
+        setItemToDelete({ type: 'budget', id });
+        setIsConfirmationModalOpen(true);
+    };
+    
+    // --- Confirmation Modal Handler ---
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        if (itemToDelete.type === 'expense') {
+            const success = await deleteExpense(itemToDelete.id);
+            if (success) setExpenses(prev => prev.filter(e => e.id !== itemToDelete.id));
+        } else if (itemToDelete.type === 'budget') {
+            const success = await deleteBudget(itemToDelete.id);
+            if (success) setBudgets(prev => prev.filter(b => b.id !== itemToDelete.id));
+        } else if (itemToDelete.type === 'income') {
+            // Find the full income object before deleting it
+            const incomeToDelete = income.find(i => i.id === itemToDelete.id);
+            if (!incomeToDelete) {
+                console.error("Could not find income to delete in local state.");
+                setIsConfirmationModalOpen(false);
+                setItemToDelete(null);
+                return;
+            }
+            
+            const success = await deleteIncome(itemToDelete.id);
+
+            if (success) {
+                // 1. Update local income state
+                setIncome(prev => prev.filter(i => i.id !== itemToDelete.id));
+
+                // 2. Find and update the corresponding budget
+                const incomeMonth = incomeToDelete.date.slice(0, 7);
+                const existingBudget = budgets.find(b => b.month === incomeMonth && b.category === 'General');
+                
+                if (existingBudget) {
+                    const newAmount = existingBudget.amount - incomeToDelete.amount;
+                    const budgetToSave = {
+                        month: incomeMonth,
+                        category: 'General',
+                        amount: newAmount < 0 ? 0 : newAmount, // Ensure budget doesn't go negative
+                    };
+                    
+                    const savedBudget = await upsertBudget(budgetToSave);
+                    if (savedBudget) {
+                        // 3. Update local budget state with the new value from the DB
+                        setBudgets(prev => 
+                            prev.map(b => 
+                                (b.month === incomeMonth && b.category === 'General') 
+                                ? savedBudget 
+                                : b
+                            )
+                        );
+                    }
+                }
+            }
+        }
+
+        setIsConfirmationModalOpen(false);
+        setItemToDelete(null);
+    };
+    
+    const totalExpensesForMonth = budgets.length > 0 ? expenses
+          .filter(e => e.date.startsWith(new Date().toISOString().slice(0, 7)))
+          .reduce((acc, e) => acc + e.amount, 0) : 0;
+          
+    const mainBudgetForMonth = budgets.find(b => b.month === new Date().toISOString().slice(0, 7) && b.category === 'General') || null;
+
+    const renderView = () => {
+        switch (currentView) {
+            case 'dashboard':
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} />;
+            case 'history':
+                return <HistoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} />;
+            case 'categories':
+                 return <CategoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} />;
+            case 'budgets':
+                return <BudgetView expenses={expenses} onBudgetsUpdate={fetchData} requestDeleteBudget={requestDeleteBudget} />;
+            case 'income':
+                return <IncomeView income={income} requestDeleteIncome={requestDeleteIncome} onAddIncomeClick={() => setIsAddIncomeModalOpen(true)}/>;
+            case 'reports':
+                return <ReportsView />;
+            case 'offers':
+                return <OffersView />;
+            case 'settings':
+                return <SettingsView />;
+            default:
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} />;
+        }
+    };
+    
+    const handleNavigateToCheckout = (plan: Plan) => {
+        setSelectedPlan(plan);
+        setAuthView('checkout');
+    };
+
+    if (loading) {
+        return <div className="h-screen w-screen flex items-center justify-center bg-bkg"><div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div></div>;
+    }
+    
+    if (!session) {
+        switch (authView) {
+            case 'signIn':
+                return <SignInPage 
+                    onNavigateToSignUp={() => setAuthView('signUp')} 
+                    onSignInSuccess={() => {}}
+                    onNavigateToLanding={() => setAuthView('landing')}
+                    notification={notification}
+                 />;
+            case 'signUp':
+                return <SignUpPage 
+                    onNavigateToSignIn={() => setAuthView('signIn')} 
+                    onSignUpSuccess={() => setAuthView('awaitingConfirmation')}
+                    onNavigateToLanding={() => setAuthView('landing')}
+                />;
+            case 'awaitingConfirmation':
+                return <AwaitingConfirmationPage onNavigateToSignIn={() => setAuthView('signIn')} />;
+            case 'resetPassword':
+                return <ResetPasswordPage onPasswordUpdated={() => {
+                    setNotification({type: 'success', message: 'Contraseña actualizada con éxito. Por favor, inicia sesión.'});
+                    setAuthView('signIn');
+                }} />;
+            case 'checkout':
+                if (!selectedPlan) {
+                    setAuthView('landing');
+                    return null;
+                }
+                return <CheckoutPage plan={selectedPlan} onNavigateToLanding={() => setAuthView('landing')} />;
+            case 'landing':
+            default:
+                return <LandingPage 
+                    onNavigateToSignIn={() => setAuthView('signIn')} 
+                    onNavigateToSignUp={() => setAuthView('signUp')}
+                    onNavigateToCheckout={handleNavigateToCheckout}
+                />;
+        }
+    }
+
+    return (
+        <div className="bg-bkg min-h-screen flex text-text-primary font-sans">
+            <LeftSidebar 
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
+                currentView={currentView} 
+                setCurrentView={setCurrentView} 
+                handleSignOut={handleSignOut}
+                username={username}
+            />
+
+            <main className={`flex-1 p-8 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
+                {renderView()}
+            </main>
+            
+            <button
+                onClick={() => setIsAddExpenseModalOpen(true)}
+                className="fixed bottom-8 right-8 bg-primary text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition-transform transform hover:scale-110 z-30"
+                aria-label="Agregar nuevo gasto"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+            
+            <BudgetSidebar 
+                isOpen={isBudgetSidebarOpen}
+                setIsOpen={setIsBudgetSidebarOpen}
+                mainBudget={mainBudgetForMonth}
+                totalExpenses={totalExpensesForMonth}
+                onEditClick={() => setCurrentView('budgets')}
+            />
+
+            <AddExpenseModal
+                isOpen={isAddExpenseModalOpen}
+                onClose={() => setIsAddExpenseModalOpen(false)}
+                onAddExpense={handleAddExpense}
+            />
+            <AddIncomeModal
+                isOpen={isAddIncomeModalOpen}
+                onClose={() => setIsAddIncomeModalOpen(false)}
+                onAddIncome={handleAddIncome}
+            />
+            <ConfirmationModal
+                isOpen={isConfirmationModalOpen}
+                onClose={() => setIsConfirmationModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title={`Eliminar ${itemToDelete?.type === 'expense' ? 'Gasto' : itemToDelete?.type === 'budget' ? 'Presupuesto' : 'Ingreso'}`}
+                message="¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer."
+            />
+        </div>
+    );
+};
+
+export default App;
