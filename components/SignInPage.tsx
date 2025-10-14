@@ -61,18 +61,18 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
     return (
         <div className="min-h-screen flex font-sans">
             {/* Left Panel - Branding */}
-            <div className="hidden lg:flex w-1/2 bg-gradient-to-tr from-blue-800 to-primary items-center justify-center p-12 text-white flex-col relative overflow-hidden">
-                <div className="absolute -top-16 -left-16 w-72 h-72 bg-white/10 rounded-full"></div>
-                <div className="absolute -bottom-24 -right-10 w-80 h-80 bg-white/10 rounded-full"></div>
+            <div className="hidden lg:flex w-1/2 bg-gray-50 items-center justify-center p-12 text-text-primary flex-col relative overflow-hidden border-r border-border">
+                <div className="absolute -top-16 -left-16 w-72 h-72 bg-primary/10 rounded-full"></div>
+                <div className="absolute -bottom-24 -right-10 w-80 h-80 bg-primary/10 rounded-full"></div>
                 
                 <div className="z-10 text-center">
-                    <h1 className="text-5xl font-bold tracking-tight">FinTrack</h1>
-                    <p className="mt-4 text-xl text-blue-200">Toma el control de tus finanzas con la claridad de la IA.</p>
+                    <h1 className="text-5xl font-bold tracking-tight text-gray-900">FinTrack</h1>
+                    <p className="mt-4 text-xl text-text-secondary">Toma el control de tus finanzas con la claridad de la IA.</p>
                 </div>
             </div>
 
             {/* Right Panel - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center bg-bkg p-8 relative">
+            <div className="w-full lg:w-1/2 flex items-center justify-center bg-background p-8 relative">
                 <div className="absolute top-8 left-8">
                     <button onClick={onNavigateToLanding} className="flex items-center text-sm font-medium text-text-secondary hover:text-primary transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -143,7 +143,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                                 />
                                 <label htmlFor="remember-me" className="font-medium text-text-secondary">Recordarme</label>
                             </div>
-                            <button type="button" onClick={handlePasswordReset} className="font-bold text-primary hover:text-blue-600">
+                            <button type="button" onClick={handlePasswordReset} className="font-bold text-primary hover:text-amber-600">
                                 ¿Olvidaste tu contraseña?
                             </button>
                         </div>
@@ -152,7 +152,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-bold text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all duration-300"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-bold text-white bg-primary hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all duration-300"
                             >
                                 {loading ? <Spinner /> : 'Acceder'}
                             </button>
@@ -160,7 +160,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                     </form>
                     <p className="mt-8 text-center text-sm text-text-secondary">
                         ¿No tienes una cuenta?{' '}
-                        <button onClick={onNavigateToSignUp} className="font-bold text-primary hover:text-blue-600">
+                        <button onClick={onNavigateToSignUp} className="font-bold text-primary hover:text-amber-600">
                             Regístrate
                         </button>
                     </p>

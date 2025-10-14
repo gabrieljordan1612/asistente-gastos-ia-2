@@ -40,7 +40,7 @@ export const addExpense = async (expense: ExpenseInsert): Promise<Expense | null
     .from('expenses')
     .insert([expenseToInsert])
     .select()
-    .single(); // .single() para que devuelva el objeto insertado, no un array
+    .single(); // .single() is fine here as we are inserting and selecting one record
 
   if (error) {
     console.error('Error adding expense:', error.message);
@@ -50,26 +50,30 @@ export const addExpense = async (expense: ExpenseInsert): Promise<Expense | null
   return data;
 };
 
-export const updateExpense = async (id: number, expense: Partial<ExpenseInsert>): Promise<boolean> => {
+export const updateExpense = async (id: number, expense: Partial<ExpenseInsert>): Promise<Expense | null> => {
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) {
         console.error("No user logged in");
-        return false;
+        return null;
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from('expenses')
         .update(expense)
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
 
     if (error) {
         console.error('Error updating expense:', error.message);
-        return false;
+        return null;
     }
     
-    return true;
+    if (data && data.length > 0) {
+        return data[0];
+    }
+    return null;
 };
 
 export const deleteExpense = async (id: number): Promise<boolean> => {
@@ -130,26 +134,30 @@ export const addIncome = async (income: IncomeInsert): Promise<Income | null> =>
   return data;
 };
 
-export const updateIncome = async (id: number, income: Partial<IncomeInsert>): Promise<boolean> => {
+export const updateIncome = async (id: number, income: Partial<IncomeInsert>): Promise<Income | null> => {
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) {
         console.error("No user logged in");
-        return false;
+        return null;
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from('income')
         .update(income)
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
 
     if (error) {
         console.error('Error updating income:', error.message);
-        return false;
+        return null;
     }
     
-    return true;
+    if (data && data.length > 0) {
+        return data[0];
+    }
+    return null;
 };
 
 export const deleteIncome = async (id: number): Promise<boolean> => {

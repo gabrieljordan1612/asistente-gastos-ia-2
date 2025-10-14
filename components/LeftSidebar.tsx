@@ -74,7 +74,7 @@ const NavItem: React.FC<{
                 className={`flex items-center w-full py-3 rounded-lg transition-colors duration-200 ${
                     isActive
                         ? 'bg-primary/10 text-primary font-bold'
-                        : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'
+                        : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
                 } ${showText ? 'px-4' : 'px-2 justify-center'}`}
             >
                 <span className={`${showText ? 'mr-4' : 'mr-0'}`}>{icon}</span>
