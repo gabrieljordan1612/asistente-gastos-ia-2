@@ -49,6 +49,27 @@ export const addExpense = async (expense: ExpenseInsert): Promise<Expense | null
   return data;
 };
 
+export const updateExpense = async (id: number, expense: Partial<ExpenseInsert>): Promise<boolean> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        console.error("No user logged in");
+        return false;
+    }
+
+    const { error } = await supabase
+        .from('expenses')
+        .update(expense)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error('Error updating expense:', error.message);
+        return false;
+    }
+    
+    return true;
+};
+
 export const deleteExpense = async (id: number): Promise<boolean> => {
   const { error } = await supabase
     .from('expenses')

@@ -15,6 +15,7 @@ interface CategoryDetailViewProps {
 
 const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category, allExpenses, onBack }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   
   const categoryExpenses = useMemo(() => {
     return allExpenses.filter(expense => expense.category === category.name);
@@ -26,6 +27,12 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category, allEx
       .filter(e => e.date.startsWith(currentMonthStr))
       .reduce((sum, e) => sum + e.amount, 0);
   }, [categoryExpenses, currentDate]);
+
+  const expensesForSelectedDay = useMemo(() => {
+    if (!selectedDate) return [];
+    return categoryExpenses.filter(e => e.date === selectedDate);
+  }, [selectedDate, categoryExpenses]);
+
 
   return (
     <div>
@@ -46,17 +53,48 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category, allEx
         </div>
       </div>
 
-      <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
-        <ExpenseChart
-          expenses={categoryExpenses}
-          categories={[category]} 
-          currentDate={currentDate}
-          setCurrentDate={setCurrentDate}
-          selectedDate={null}
-          setSelectedDate={() => {}} 
-          chartMode="byDay"
-          barColor={category.color}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="lg:col-span-3 bg-surface p-6 rounded-xl border border-border shadow-sm">
+          <ExpenseChart
+            expenses={categoryExpenses}
+            categories={[category]} 
+            currentDate={currentDate}
+            setCurrentDate={setCurrentDate}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate} 
+            chartMode="byDay"
+            barColor={category.color}
+          />
+        </div>
+        <div className="lg:col-span-2 bg-surface p-6 rounded-xl border border-border shadow-sm">
+          {selectedDate ? (
+              <div className="flex flex-col h-full">
+                <h3 className="text-lg font-bold text-text-primary mb-4">
+                  Gastos del {new Date(selectedDate + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                </h3>
+                {expensesForSelectedDay.length > 0 ? (
+                  <div className="space-y-3 flex-grow overflow-y-auto pr-2">
+                    {expensesForSelectedDay.map(expense => (
+                      <div key={expense.id} className="flex justify-between items-center bg-bkg p-3 rounded-lg">
+                        <p className="text-sm font-medium text-text-primary truncate pr-4">{expense.description || 'Gasto'}</p>
+                        <p className="text-sm font-bold text-red-500 whitespace-nowrap">S/. {expense.amount.toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex-grow flex items-center justify-center text-center text-text-secondary">
+                    <p>No hay gastos registrados para este día.</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center text-text-secondary">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-border mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <h3 className="font-semibold text-text-primary">Detalle de Gastos</h3>
+                <p className="text-sm mt-1">Selecciona un día en el calendario para ver los gastos correspondientes.</p>
+              </div>
+            )}
+        </div>
       </div>
     </div>
   );

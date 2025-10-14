@@ -102,7 +102,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose, onAddI
             
             <div className="mt-6 flex justify-end space-x-3">
                 <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-medium text-text-primary bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-md hover:bg-green-700 transition-colors">Guardar Ingreso</button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-700 transition-colors">Guardar Ingreso</button>
             </div>
           </form>
       </div>

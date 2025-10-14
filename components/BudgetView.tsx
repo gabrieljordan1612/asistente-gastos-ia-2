@@ -147,7 +147,7 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
                     <button 
                         onClick={() => handleOpenModal('Category')} 
                         disabled={!canAddMoreCategories}
-                        className="bg-secondary/10 text-secondary font-semibold text-sm py-2 px-4 rounded-lg hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        className="bg-primary/10 text-primary font-semibold text-sm py-2 px-4 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         + Agregar Categoría
                     </button>
                 </div>

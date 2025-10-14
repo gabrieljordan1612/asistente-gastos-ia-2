@@ -45,7 +45,8 @@ const DashboardView: React.FC<{
     budgets: Budget[]; 
     username: string | null; 
     categories: Category[];
-}> = ({ expenses, budgets, username, categories }) => {
+    onAddExpenseClick: () => void;
+}> = ({ expenses, budgets, username, categories, onAddExpenseClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(new Date().toISOString().split('T')[0]);
   
@@ -78,9 +79,33 @@ const DashboardView: React.FC<{
   
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Hola, {username || 'Usuario'}!</h1>
-        <p className="text-text-secondary">Bienvenido a tu panel de control financiero.</p>
+       {/* Mobile only FAB */}
+      <button
+        onClick={onAddExpenseClick}
+        className="md:hidden fixed bottom-6 right-6 bg-primary text-white rounded-full p-4 shadow-lg z-20 hover:bg-blue-700 transition-transform duration-300 hover:scale-110"
+        aria-label="Agregar gasto"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+        </svg>
+      </button>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex justify-between items-center">
+        <div>
+            <h1 className="text-3xl font-bold text-text-primary">Hola, {username || 'Usuario'}!</h1>
+            <p className="text-text-secondary">Bienvenido a tu panel de control financiero.</p>
+        </div>
+        <button
+            onClick={onAddExpenseClick}
+            className="bg-primary text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20 flex items-center space-x-2"
+            aria-label="Agregar gasto"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <span>Agregar gasto</span>
+        </button>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -134,7 +159,7 @@ const DashboardView: React.FC<{
                   <div className="text-center py-10 h-full flex flex-col justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       <p className="mt-4 text-sm font-semibold text-text-secondary">Aún no tienes gastos.</p>
-                      <p className="text-xs text-text-secondary">Haz clic en el '+' para empezar.</p>
+                      <p className="text-xs text-text-secondary">Agrega tu primer gasto para empezar.</p>
                   </div>
               )}
             </div>

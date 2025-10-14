@@ -6,13 +6,14 @@ import type { Expense, Category } from '../types';
 interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddExpense: (expense: Omit<Expense, 'id' | 'user_id' | 'created_at'>) => void;
+  onSave: (expense: Partial<Omit<Expense, 'user_id' | 'created_at'>>) => void;
   categories: Category[];
+  expenseToEdit?: Expense | null;
 }
 
 type Status = 'idle' | 'analyzing' | 'manual' | 'confirm';
 
-const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAddExpense, categories }) => {
+const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSave, categories, expenseToEdit }) => {
   const [status, setStatus] = useState<Status>('idle');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -20,6 +21,8 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
   const [category, setCategory] = useState(categories.length > 0 ? categories[0].name : '');
   const [error, setError] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  const isEditing = !!expenseToEdit;
 
   const resetForm = useCallback(() => {
     setStatus('idle');
@@ -31,16 +34,25 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
     setDescription('');
   }, [categories]);
   
-  // Update default category if categories list changes
-  // FIX: Imported `useEffect` from `react` to resolve `Cannot find name 'useEffect'` error.
+  // Update form based on mode (add/edit)
   useEffect(() => {
-      if (categories.length > 0) {
-          setCategory(categories[0].name);
-      }
-  }, [categories]);
+    if (isOpen) {
+        if (isEditing && expenseToEdit) {
+            setStatus('manual');
+            setAmount(String(expenseToEdit.amount));
+            setDate(expenseToEdit.date);
+            setDescription(expenseToEdit.description || '');
+            setCategory(expenseToEdit.category || (categories.length > 0 ? categories[0].name : ''));
+            setImagePreview(null);
+            setError('');
+        } else {
+            resetForm();
+        }
+    }
+  }, [isOpen, isEditing, expenseToEdit, resetForm, categories]);
 
   const handleClose = () => {
-    resetForm();
+    // We don't call resetForm here because onClose from parent will trigger the useEffect
     onClose();
   };
 
@@ -80,12 +92,18 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
         setError('Por favor, completa todos los campos requeridos.');
         return;
     }
-    onAddExpense({
+    const expenseData: Partial<Omit<Expense, 'user_id' | 'created_at'>> = {
       amount: parseFloat(amount),
       category: category,
       date,
       description
-    });
+    };
+
+    if (isEditing) {
+        expenseData.id = expenseToEdit.id;
+    }
+
+    onSave(expenseData);
     handleClose();
   };
 
@@ -106,9 +124,11 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
         return (
             <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <h2 className="text-2xl font-bold text-center mb-2 text-text-primary">
-                {status === 'confirm' ? 'Confirma los Datos' : 'Nuevo Gasto Manual'}
+                {isEditing ? 'Editar Gasto' : (status === 'confirm' ? 'Confirma los Datos' : 'Nuevo Gasto Manual')}
             </h2>
-            <p className="text-center text-text-secondary mb-6">Ajusta los detalles y categoriza tu gasto.</p>
+            <p className="text-center text-text-secondary mb-6">
+                {isEditing ? 'Ajusta los detalles de tu gasto.' : 'Ajusta los detalles y categoriza tu gasto.'}
+            </p>
             
             {error && <p className="text-red-500 text-center mb-4">{error}</p>}
             
@@ -145,11 +165,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAd
             
             <div className="mt-6 flex justify-end space-x-3">
                 <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-medium text-text-primary bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-md hover:bg-green-700 transition-colors">Guardar Gasto</button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-700 transition-colors">{isEditing ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
             </div>
           </form>
         );
       default:
+        // This case should not be reachable in edit mode
+        if (isEditing) return null;
         return (
           <div className="text-center flex flex-col items-center justify-center h-full">
             <h2 className="text-2xl font-bold mb-4 text-text-primary">Agregar Nuevo Gasto</h2>

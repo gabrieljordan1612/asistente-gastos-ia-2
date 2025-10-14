@@ -67,7 +67,7 @@ const OfferCard: React.FC<{ offer: typeof offers[0] }> = ({ offer }) => (
                 href="#" // Aquí iría tu enlace de afiliado real
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-full block text-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-medium text-white bg-secondary hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                className="w-full block text-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
                 {offer.cta}
             </a>

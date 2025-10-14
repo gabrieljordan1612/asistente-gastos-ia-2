@@ -8,7 +8,7 @@ import BudgetView from './components/BudgetView';
 import SettingsView from './components/SettingsView';
 import AddExpenseModal from './components/AddExpenseModal';
 import ConfirmationModal from './components/ConfirmationModal';
-import { getExpenses, addExpense, deleteExpense, getBudgets, deleteBudget, getIncome, addIncome, deleteIncome, upsertBudget } from './services/supabaseService';
+import { getExpenses, addExpense, deleteExpense, getBudgets, deleteBudget, getIncome, addIncome, deleteIncome, upsertBudget, updateExpense } from './services/supabaseService';
 // FIX: Import the View type from the central types file.
 import type { Expense, Budget, Income, Plan, View, Category } from './types';
 import LandingPage from './components/LandingPage';
@@ -78,8 +78,9 @@ const App: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>(getInitialCategories);
 
     // UI State
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
     const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+    const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
     const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
     const [isBudgetSidebarOpen, setIsBudgetSidebarOpen] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
@@ -117,9 +118,20 @@ const App: React.FC = () => {
             setUsername(session?.user?.user_metadata?.username ?? session?.user?.email ?? null);
             setLoading(false);
         });
+        
+        const handleResize = () => {
+          if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+          } else {
+            setIsSidebarOpen(true);
+          }
+        };
+        window.addEventListener('resize', handleResize);
+
 
         return () => {
             subscription.unsubscribe();
+            window.removeEventListener('resize', handleResize);
         };
     }, []);
 
@@ -178,16 +190,42 @@ const App: React.FC = () => {
 
 
     // --- Expense Handlers ---
-    const handleAddExpense = async (expense: Omit<Expense, 'id' | 'user_id' | 'created_at'>) => {
-        const newExpense = await addExpense(expense);
-        if (newExpense) {
-            setExpenses(prev => [newExpense, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    const handleSaveExpense = async (expenseData: Partial<Omit<Expense, 'user_id' | 'created_at'>>) => {
+        if (expenseData.id) { // UPDATE
+            const { id, ...updateData } = expenseData;
+            const success = await updateExpense(id, updateData);
+            if (success) {
+                // Optimistic update
+                setExpenses(prev => prev.map(e => 
+                    e.id === id ? { ...e, ...updateData } : e
+                ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+            } else {
+                // Optionally handle failure (e.g., show a notification)
+                console.error("Failed to update expense on the server.");
+            }
+        } else { // ADD
+            const newExpense = await addExpense(expenseData as Omit<Expense, 'id' | 'user_id' | 'created_at'>);
+            if (newExpense) {
+                setExpenses(prev => [newExpense, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+            }
         }
+        setIsAddExpenseModalOpen(false);
+        setExpenseToEdit(null);
+    };
+
+    const requestEditExpense = (expense: Expense) => {
+        setExpenseToEdit(expense);
+        setIsAddExpenseModalOpen(true);
     };
 
     const requestDeleteExpense = (id: number) => {
         setItemToDelete({ type: 'expense', id });
         setIsConfirmationModalOpen(true);
+    };
+    
+    const handleCloseExpenseModal = () => {
+        setIsAddExpenseModalOpen(false);
+        setExpenseToEdit(null);
     };
 
     // --- Income Handlers ---
@@ -289,9 +327,9 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (currentView) {
             case 'dashboard':
-                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} />;
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} onAddExpenseClick={() => setIsAddExpenseModalOpen(true)} />;
             case 'history':
-                return <HistoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} categories={categories} />;
+                return <HistoryView expenses={expenses} requestDeleteExpense={requestDeleteExpense} requestEditExpense={requestEditExpense} categories={categories} />;
             case 'categories':
                  return <CategoryView 
                     categories={categories} 
@@ -310,7 +348,7 @@ const App: React.FC = () => {
             case 'settings':
                 return <SettingsView />;
             default:
-                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} />;
+                return <DashboardView expenses={expenses} budgets={budgets} username={username} categories={categories} onAddExpenseClick={() => setIsAddExpenseModalOpen(true)} />;
         }
     };
     
@@ -371,20 +409,33 @@ const App: React.FC = () => {
                 handleSignOut={handleSignOut}
                 username={username}
             />
-
-            <main className={`flex-1 p-8 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
-                {renderView()}
-            </main>
             
-            <button
-                onClick={() => setIsAddExpenseModalOpen(true)}
-                className="fixed bottom-8 right-8 bg-primary text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition-transform transform hover:scale-110 z-30"
-                aria-label="Agregar nuevo gasto"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-            </button>
+            {/* Backdrop for mobile */}
+            {/* FIX: Replaced 'isOpen' with 'isSidebarOpen' to correctly control the backdrop visibility based on the sidebar's state. */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+            )}
+
+            {/* FIX: Replaced 'isOpen' with 'isSidebarOpen' to correctly adjust the main content margin based on the sidebar's state. */}
+            <div className={`flex flex-col flex-1 h-screen overflow-y-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+                 {/* Mobile Header */}
+                <header className="md:hidden sticky top-0 bg-bkg/80 backdrop-blur-sm z-10 flex items-center justify-between p-4 border-b border-border">
+                    <button onClick={() => setIsSidebarOpen(true)} className="p-1 text-text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <h1 className="text-xl font-bold text-text-primary capitalize">{currentView === 'offers' ? 'Marketplace' : currentView}</h1>
+                    <div className="w-8"></div> {/* Placeholder for alignment */}
+                </header>
+
+                <main className="flex-1 p-4 sm:p-8">
+                    {renderView()}
+                </main>
+            </div>
             
             <BudgetSidebar 
                 isOpen={isBudgetSidebarOpen}
@@ -396,9 +447,10 @@ const App: React.FC = () => {
 
             <AddExpenseModal
                 isOpen={isAddExpenseModalOpen}
-                onClose={() => setIsAddExpenseModalOpen(false)}
-                onAddExpense={handleAddExpense}
+                onClose={handleCloseExpenseModal}
+                onSave={handleSaveExpense}
                 categories={categories}
+                expenseToEdit={expenseToEdit}
             />
             <AddIncomeModal
                 isOpen={isAddIncomeModalOpen}

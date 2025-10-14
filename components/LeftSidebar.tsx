@@ -64,20 +64,23 @@ const NavItem: React.FC<{
     onClick: () => void;
     isSidebarOpen: boolean;
 }> = ({ icon, label, isActive, onClick, isSidebarOpen }) => {
+    // On mobile, the sidebar is always "open" (i.e., wide) when it's visible.
+    const showText = isSidebarOpen;
+
     return (
         <div className="relative group">
             <button
                 onClick={onClick}
                 className={`flex items-center w-full py-3 rounded-lg transition-colors duration-200 ${
                     isActive
-                        ? 'bg-primary/10 text-primary font-bold'
-                        : 'text-text-secondary hover:bg-border hover:text-text-primary'
-                } ${isSidebarOpen ? 'px-4' : 'px-2 justify-center'}`}
+                        ? 'bg-white text-primary font-bold'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                } ${showText ? 'px-4' : 'px-2 justify-center'}`}
             >
-                <span className={`${isSidebarOpen ? 'mr-4' : 'mr-0'}`}>{icon}</span>
-                <span className={`transition-opacity duration-200 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>{label}</span>
+                <span className={`${showText ? 'mr-4' : 'mr-0'}`}>{icon}</span>
+                <span className={`transition-opacity duration-200 ${showText ? 'opacity-100' : 'opacity-0 absolute'}`}>{label}</span>
             </button>
-            {!isSidebarOpen && (
+            {!showText && (
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
                     {label}
                 </div>
@@ -109,12 +112,20 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
         { id: 'reports', label: 'Reportes', icon: <ReportsIcon /> },
         { id: 'offers', label: 'Marketplace', icon: <MarketplaceIcon /> },
     ];
+    
+    const handleNavigation = (view: View) => {
+        setCurrentView(view);
+        if (window.innerWidth < 768) {
+            setIsOpen(false);
+        }
+    };
+
 
     return (
-        <aside className={`bg-surface border-r border-border h-screen flex flex-col p-4 fixed transition-all duration-300 ease-in-out ${isOpen ? 'w-64' : 'w-20'}`}>
+        <aside className={`bg-primary h-screen flex flex-col p-4 fixed z-40 transition-all duration-300 ease-in-out w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${isOpen ? 'md:w-64' : 'md:w-20'}`}>
             <div className={`flex items-center mb-8 transition-all duration-300 ${isOpen ? 'px-2' : 'px-0 justify-center'}`}>
-                 <span className={`font-bold text-text-primary text-2xl transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>FinTrack</span>
-                 <span className={`font-bold text-text-primary text-3xl transition-opacity duration-200 ${!isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>F</span>
+                 <span className={`font-bold text-white text-2xl transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>FinTrack</span>
+                 <span className={`font-bold text-white text-3xl transition-opacity duration-200 ${!isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>F</span>
             </div>
 
             <nav className="flex-grow space-y-2">
@@ -124,19 +135,19 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
                         icon={item.icon}
                         label={item.label}
                         isActive={currentView === item.id}
-                        onClick={() => setCurrentView(item.id)}
+                        onClick={() => handleNavigation(item.id)}
                         isSidebarOpen={isOpen}
                     />
                 ))}
             </nav>
 
             <div className="mt-auto">
-                 <div className="border-t border-border pt-4 space-y-2">
+                 <div className="border-t border-white/20 pt-4 space-y-2">
                     <NavItem
                         icon={<SettingsIcon />}
                         label="Ajustes"
                         isActive={currentView === 'settings'}
-                        onClick={() => setCurrentView('settings')}
+                        onClick={() => handleNavigation('settings')}
                         isSidebarOpen={isOpen}
                     />
                     <NavItem
@@ -148,14 +159,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
                     />
                 </div>
                 <div className={`flex items-center mt-6 p-2 transition-all duration-300 ${!isOpen ? 'justify-center': ''}`}>
-                    <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center font-bold text-primary flex-shrink-0">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0">
                         {username ? username.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div className={`ml-3 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                        <p className="font-semibold text-text-primary text-sm truncate">{username || 'Usuario'}</p>
+                        <p className="font-semibold text-white text-sm truncate">{username || 'Usuario'}</p>
                     </div>
                 </div>
-                 <button onClick={() => setIsOpen(!isOpen)} className="w-full mt-4 text-text-secondary hover:text-primary flex items-center justify-center py-2">
+                 <button onClick={() => setIsOpen(!isOpen)} className="w-full mt-4 text-white/80 hover:text-white hidden md:flex items-center justify-center py-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform duration-300 ${!isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                  </button>
             </div>

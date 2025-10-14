@@ -30,7 +30,7 @@ const IncomeView: React.FC<{ income: Income[], requestDeleteIncome: (id: number)
                 <h1 className="text-3xl font-bold text-text-primary">Historial de Ingresos</h1>
                 <button
                     onClick={onAddIncomeClick}
-                    className="bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-transform duration-300 hover:scale-105 shadow-lg shadow-secondary/20"
+                    className="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20"
                 >
                     + Añadir Ingreso
                 </button>

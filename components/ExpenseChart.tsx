@@ -212,10 +212,8 @@ const ExpenseCalendarChart: React.FC<{
                     const hasExpenses = expensesByDay.has(dateStr);
                     const isSelected = selectedDate === dateStr;
                     
-                    const isClickable = chartMode === 'byCategory';
-                    
                     return (
-                        <div key={day} onClick={() => isClickable && handleDayClick(dateStr)} className={`p-2 rounded-lg transition-colors ${isClickable ? 'cursor-pointer hover:bg-primary/10' : ''}`} role={isClickable ? "button" : undefined} tabIndex={isClickable ? 0 : undefined} onKeyDown={(e) => isClickable && e.key === 'Enter' && handleDayClick(dateStr)}>
+                        <div key={day} onClick={() => handleDayClick(dateStr)} className="p-2 rounded-lg transition-colors cursor-pointer hover:bg-primary/10" role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleDayClick(dateStr)}>
                             <div className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full relative ${isSelected ? 'bg-primary text-white font-bold' : 'text-text-primary'}`}>
                                 {day}
                                 {hasExpenses && <div className={`absolute bottom-0 h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}`}></div>}

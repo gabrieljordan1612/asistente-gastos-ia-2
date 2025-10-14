@@ -90,7 +90,7 @@ const SetBudgetModal: React.FC<SetBudgetModalProps> = ({ isOpen, onClose, onSave
           </div>
           <div className="mt-6 flex justify-end space-x-3">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-text-primary bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-md hover:bg-green-700">Guardar</button>
+            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-700">Guardar</button>
           </div>
         </form>
       </div>
