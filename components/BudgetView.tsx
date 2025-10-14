@@ -11,7 +11,7 @@ const formatCurrency = (amount: number) => `S/. ${amount.toFixed(2)}`;
 const getProgressBarColor = (percentage: number) => {
     if (percentage > 100) return 'bg-red-500';
     if (percentage > 80) return 'bg-yellow-500';
-    return 'bg-green-500';
+    return 'bg-secondary';
 };
 
 const BudgetProgressBar: React.FC<{ spent: number; total: number }> = ({ spent, total }) => {
@@ -116,14 +116,17 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
                                 <h2 className="text-sm font-semibold text-text-secondary">Presupuesto Total del Mes</h2>
                                 <p className="text-3xl font-bold text-text-primary mt-1">{formatCurrency(mainBudget.amount)}</p>
                            </div>
-                           <button onClick={() => handleOpenModal('General', mainBudget)} className="text-sm font-medium text-primary hover:text-blue-700">Editar</button>
+                           <button onClick={() => handleOpenModal('General', mainBudget)} className="flex items-center space-x-2 bg-primary/10 text-primary font-semibold text-sm py-2 px-4 rounded-lg hover:bg-primary/20 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
+                                <span>Editar</span>
+                           </button>
                         </div>
                         <BudgetProgressBar spent={totalSpent} total={mainBudget.amount} />
                         <div className="flex justify-between text-sm mt-2">
                             <span className="text-text-secondary">Gastado: <span className="font-bold text-red-500">{formatCurrency(totalSpent)}</span></span>
                             <span className="text-text-secondary">
                                 {remainingAmount >= 0 ? 'Restante: ' : 'Excedido: '}
-                                <span className={`font-bold ${remainingAmount >=0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <span className={`font-bold ${remainingAmount >=0 ? 'text-secondary' : 'text-red-500'}`}>
                                     {formatCurrency(Math.abs(remainingAmount))}
                                 </span>
                             </span>
@@ -134,7 +137,7 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                         <p className="mt-4 font-semibold text-text-primary">Aún no has definido tu presupuesto mensual.</p>
                         <p className="text-sm text-text-secondary">Establece un límite para empezar a controlar tus gastos.</p>
-                        <button onClick={() => handleOpenModal('General')} className="mt-4 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-transform duration-300 hover:scale-105">
+                        <button onClick={() => handleOpenModal('General')} className="mt-4 bg-primary text-background font-bold py-2 px-4 rounded-lg hover:bg-yellow-500 transition-transform duration-300 hover:scale-105 animate-glow">
                             Establecer Presupuesto Mensual
                         </button>
                     </div>
@@ -160,7 +163,7 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
                                 <div key={budget.id} className="bg-surface border border-border rounded-xl p-4">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center space-x-3">
-                                            {getCategoryIcon(budget.category, category?.color || 'gray')}
+                                            {getCategoryIcon(budget.category)}
                                             <span className="font-bold text-text-primary">{budget.category}</span>
                                         </div>
                                          <div className="flex items-center space-x-2">

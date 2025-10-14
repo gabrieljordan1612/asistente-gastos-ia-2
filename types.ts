@@ -28,6 +28,27 @@ export interface Budget {
   amount: number;
 }
 
+// FIX: Added Goal and GoalContribution types to resolve import errors.
+export interface Goal {
+  id: number;
+  user_id: string;
+  name: string;
+  emoji: string;
+  target_amount: number;
+  current_amount: number;
+  target_date: string; // YYYY-MM-DD
+  created_at: string;
+}
+
+export interface GoalContribution {
+  id: number;
+  user_id: string;
+  goal_id: number;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  created_at: string;
+}
+
 export interface ExtractedData {
   amount: number | null;
   date: string | null;

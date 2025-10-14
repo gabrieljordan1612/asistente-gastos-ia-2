@@ -5,9 +5,9 @@ import type { Expense, Budget, Income } from '../types';
 type ExpenseInsert = Omit<Expense, 'id' | 'user_id' | 'created_at'>;
 type IncomeInsert = Omit<Income, 'id' | 'user_id' | 'created_at'>;
 
-
 export const getExpenses = async (): Promise<Expense[] | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) {
     console.error("No user logged in");
     return null;
@@ -27,7 +27,8 @@ export const getExpenses = async (): Promise<Expense[] | null> => {
 };
 
 export const addExpense = async (expense: ExpenseInsert): Promise<Expense | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) {
     console.error("No user logged in");
     return null;
@@ -50,7 +51,8 @@ export const addExpense = async (expense: ExpenseInsert): Promise<Expense | null
 };
 
 export const updateExpense = async (id: number, expense: Partial<ExpenseInsert>): Promise<boolean> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) {
         console.error("No user logged in");
         return false;
@@ -86,8 +88,12 @@ export const deleteExpense = async (id: number): Promise<boolean> => {
 
 // --- Funciones para Ingresos ---
 export const getIncome = async (): Promise<Income[] | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) {
+    console.error("No user logged in");
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('income')
@@ -102,8 +108,12 @@ export const getIncome = async (): Promise<Income[] | null> => {
 };
 
 export const addIncome = async (income: IncomeInsert): Promise<Income | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) {
+    console.error("No user logged in");
+    return null;
+  }
 
   const incomeToInsert = { ...income, user_id: user.id };
 
@@ -118,6 +128,28 @@ export const addIncome = async (income: IncomeInsert): Promise<Income | null> =>
     return null;
   }
   return data;
+};
+
+export const updateIncome = async (id: number, income: Partial<IncomeInsert>): Promise<boolean> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user) {
+        console.error("No user logged in");
+        return false;
+    }
+
+    const { error } = await supabase
+        .from('income')
+        .update(income)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error('Error updating income:', error.message);
+        return false;
+    }
+    
+    return true;
 };
 
 export const deleteIncome = async (id: number): Promise<boolean> => {
@@ -137,8 +169,12 @@ export const deleteIncome = async (id: number): Promise<boolean> => {
 // --- Funciones para Presupuestos ---
 
 export const getBudgets = async (): Promise<Budget[] | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) {
+    console.error("No user logged in");
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('budgets')
@@ -153,8 +189,12 @@ export const getBudgets = async (): Promise<Budget[] | null> => {
 };
 
 export const upsertBudget = async (budget: Omit<Budget, 'id' | 'user_id'>): Promise<Budget | null> => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user) {
+        console.error("No user logged in");
+        return null;
+    }
 
     // Usamos upsert para crear o actualizar un presupuesto para un mes/categoría dados
     // Se asume una restricción UNIQUE en (user_id, month, category) en la base de datos

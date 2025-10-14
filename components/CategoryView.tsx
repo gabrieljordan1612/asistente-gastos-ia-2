@@ -43,7 +43,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category, allEx
           </svg>
         </button>
         <div className="flex items-center space-x-4">
-            {getCategoryIcon(category.name, category.color, 'lg')}
+            {getCategoryIcon(category.name, 'lg')}
             <div>
                  <h1 className="text-3xl font-bold text-text-primary">{category.name}</h1>
                  <p className="text-text-secondary">
@@ -75,7 +75,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category, allEx
                 {expensesForSelectedDay.length > 0 ? (
                   <div className="space-y-3 flex-grow overflow-y-auto pr-2">
                     {expensesForSelectedDay.map(expense => (
-                      <div key={expense.id} className="flex justify-between items-center bg-bkg p-3 rounded-lg">
+                      <div key={expense.id} className="flex justify-between items-center bg-background p-3 rounded-lg">
                         <p className="text-sm font-medium text-text-primary truncate pr-4">{expense.description || 'Gasto'}</p>
                         <p className="text-sm font-bold text-red-500 whitespace-nowrap">S/. {expense.amount.toFixed(2)}</p>
                       </div>
@@ -151,12 +151,6 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSaveCategory,
                     <h1 className="text-3xl font-bold text-text-primary mb-2">Categorías</h1>
                     <p className="text-text-secondary">Organiza, crea y personaliza tus categorías de gastos.</p>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20"
-                >
-                    + Crear Categoría
-                </button>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -167,15 +161,15 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSaveCategory,
                         onKeyDown={(e) => e.key === 'Enter' && handleCategoryClick(cat)}
                         role="button"
                         tabIndex={0}
-                        className="bg-surface border border-border rounded-xl p-4 flex flex-col items-center justify-center text-center transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg animate-fade-in-up cursor-pointer group"
+                        className="bg-surface border border-border rounded-xl p-4 flex flex-col items-center justify-center text-center transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50 animate-fade-in-up cursor-pointer group"
                         style={{ animationDelay: `${index * 50}ms` }}
                     >
-                        {getCategoryIcon(cat.name, cat.color, 'lg')}
+                        {getCategoryIcon(cat.name, 'lg')}
                         <p className="mt-3 font-bold text-text-primary">{cat.name}</p>
                         <div className="mt-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                              <button 
                                 onClick={(e) => { e.stopPropagation(); handleOpenModal(cat); }}
-                                className="text-xs text-text-secondary hover:text-primary p-1 rounded-full bg-bkg hover:bg-border"
+                                className="text-xs text-text-secondary hover:text-primary p-1 rounded-full bg-background hover:bg-border"
                                 aria-label={`Editar categoría ${cat.name}`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
@@ -183,7 +177,7 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSaveCategory,
                             {!cat.isPredefined && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }}
-                                    className="text-xs text-text-secondary hover:text-red-500 p-1 rounded-full bg-bkg hover:bg-border"
+                                    className="text-xs text-text-secondary hover:text-red-500 p-1 rounded-full bg-background hover:bg-border"
                                     aria-label={`Eliminar categoría ${cat.name}`}
                                 >
                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -192,6 +186,21 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSaveCategory,
                         </div>
                     </div>
                 ))}
+                <div
+                    onClick={() => handleOpenModal()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOpenModal()}
+                    role="button"
+                    tabIndex={0}
+                    className="bg-surface border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center text-center transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary animate-fade-in-up cursor-pointer group"
+                    style={{ animationDelay: `${categories.length * 50}ms` }}
+                >
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-background group-hover:bg-primary/10 transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-text-secondary group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+                        </svg>
+                    </div>
+                    <p className="mt-3 font-bold text-text-secondary group-hover:text-primary transition-colors">Crear Categoría</p>
+                </div>
             </div>
             {isModalOpen && (
                  <AddCategoryModal

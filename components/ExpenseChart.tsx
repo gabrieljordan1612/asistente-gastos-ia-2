@@ -1,22 +1,11 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import type { Expense, Category } from '../types';
+// FIX: Import PALETTE to use centralized color definitions.
 import { PALETTE } from '../constants';
 
 
 const formatCurrency = (value: number) => `S/. ${value.toFixed(2)}`;
-
-const paletteHex: {[key: string]: string} = {
-    orange: '#F97316',
-    blue: '#3B82F6',
-    red: '#EF4444',
-    purple: '#A855F7',
-    yellow: '#EAB308',
-    teal: '#14B8A6',
-    pink: '#EC4899',
-    green: '#22C55E',
-    gray: '#6B7280'
-};
 
 const CustomTooltip = ({ active, payload, label, chartMode }: any) => {
     if (active && payload && payload.length) {
@@ -87,7 +76,8 @@ const ExpenseCalendarChart: React.FC<{
         const selectedDayExpenses = expensesByDay.get(selectedDate) || [];
         if (selectedDayExpenses.length === 0) return [];
 
-        const categoryColorMap = new Map(categories.map(c => [c.name, paletteHex[c.color] || paletteHex.gray]));
+        // FIX: Use the hex value from the imported PALETTE.
+        const categoryColorMap = new Map(categories.map(c => [c.name, PALETTE[c.color]?.hex || PALETTE.gray.hex]));
         
         const dataByCategory: { [key: string]: number } = {};
         selectedDayExpenses.forEach(expense => {
@@ -98,7 +88,7 @@ const ExpenseCalendarChart: React.FC<{
         return Object.entries(dataByCategory).map(([name, amount]) => ({
             name,
             amount,
-            color: categoryColorMap.get(name) || paletteHex.gray,
+            color: categoryColorMap.get(name) || PALETTE.gray.hex,
         })).sort((a,b) => b.amount - a.amount);
     }, [selectedDate, expensesByDay, chartMode, categories]);
     
@@ -182,7 +172,8 @@ const ExpenseCalendarChart: React.FC<{
                             <XAxis dataKey="name" stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} interval={0} />
                             <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `S/.${value}`} width={80} />
                             <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F9FAFB'}}/>
-                            <Bar dataKey="amount" fill={barColor && paletteHex[barColor] ? paletteHex[barColor] : '#3B82F6'} radius={[4, 4, 0, 0]} />
+                            {/* FIX: Use the hex value from the imported PALETTE for the bar color. */}
+                            <Bar dataKey="amount" fill={barColor && PALETTE[barColor] ? PALETTE[barColor].hex : '#3B82F6'} radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

@@ -137,25 +137,25 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSa
                     <div className="w-1/2">
                         <label htmlFor="amount" className="block text-sm font-medium text-text-secondary">Monto (S/.)</label>
                         <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} required
-                            className="mt-1 block w-full bg-bkg border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                            className="mt-1 block w-full bg-background border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                     </div>
                     <div className="w-1/2">
                         <label htmlFor="date" className="block text-sm font-medium text-text-secondary">Fecha</label>
                         <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)} required
-                            className="mt-1 block w-full bg-bkg border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                            className="mt-1 block w-full bg-background border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                     </div>
                 </div>
                  <div>
                     <label htmlFor="description" className="block text-sm font-medium text-text-secondary">Descripción (Opcional)</label>
                     <input type="text" id="description" value={description} onChange={(e) => setDescription(e.target.value)}
-                        className="mt-1 block w-full bg-bkg border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                        className="mt-1 block w-full bg-background border border-border rounded-md shadow-sm py-2 px-3 text-text-primary focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-text-secondary mb-2">Categoría</label>
                     <div className="grid grid-cols-3 gap-2">
                         {categories.map(cat => (
                             <button key={cat.id} type="button" onClick={() => setCategory(cat.name)}
-                                className={`py-2 px-3 text-sm rounded-md transition-all ${category === cat.name ? 'bg-primary text-white font-semibold' : 'bg-gray-100 hover:bg-gray-200 text-text-primary'}`}>
+                                className={`py-2 px-3 text-sm rounded-md transition-all ${category === cat.name ? 'bg-primary text-background font-semibold' : 'bg-border hover:bg-border/70 text-text-primary'}`}>
                                 {cat.name}
                             </button>
                         ))}
@@ -164,8 +164,8 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSa
             </div>
             
             <div className="mt-6 flex justify-end space-x-3">
-                <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-medium text-text-primary bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-700 transition-colors">{isEditing ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
+                <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-medium text-text-primary bg-border border border-transparent rounded-md hover:bg-border/70 transition-colors">Cancelar</button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-background bg-primary rounded-md hover:bg-yellow-500 transition-colors">{isEditing ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
             </div>
           </form>
         );
@@ -175,7 +175,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSa
         return (
           <div className="text-center flex flex-col items-center justify-center h-full">
             <h2 className="text-2xl font-bold mb-4 text-text-primary">Agregar Nuevo Gasto</h2>
-            <div className="w-full p-8 border-2 border-dashed border-border rounded-lg text-center cursor-pointer hover:border-primary hover:bg-bkg transition-all">
+            <div className="w-full p-8 border-2 border-dashed border-border rounded-lg text-center cursor-pointer hover:border-primary hover:bg-background/50 transition-all">
                 <input type="file" id="file-upload" className="hidden" accept="image/*" onChange={handleFileChange} />
                 <label htmlFor="file-upload" className="cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -186,7 +186,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSa
                 </label>
             </div>
             <div className="my-4 text-text-secondary">O</div>
-            <button onClick={handleManualEntryClick} className="w-full bg-surface border border-border text-text-primary py-2 px-4 rounded-md hover:bg-gray-100 transition-colors">
+            <button onClick={handleManualEntryClick} className="w-full bg-surface border border-border text-text-primary py-2 px-4 rounded-md hover:bg-border/50 transition-colors">
               Agregar Gasto Manualmente
             </button>
           </div>
@@ -195,7 +195,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onSa
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={handleClose}>
+    <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={handleClose}>
       <div className="bg-surface border border-border rounded-xl shadow-2xl w-full max-w-lg h-[600px] p-6 transform transition-all" onClick={(e) => e.stopPropagation()}>
         {renderContent()}
       </div>

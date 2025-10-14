@@ -372,7 +372,7 @@ const App: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="h-screen w-screen flex items-center justify-center bg-bkg"><div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div></div>;
+        return <div className="h-screen w-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div></div>;
     }
     
     if (!session) {
@@ -414,7 +414,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="bg-bkg min-h-screen flex text-text-primary font-sans">
+        <div className="bg-background min-h-screen flex text-text-primary font-sans">
             <LeftSidebar 
                 isOpen={isSidebarOpen}
                 setIsOpen={setIsSidebarOpen}
@@ -425,18 +425,16 @@ const App: React.FC = () => {
             />
             
             {/* Backdrop for mobile */}
-            {/* FIX: Replaced 'isOpen' with 'isSidebarOpen' to correctly control the backdrop visibility based on the sidebar's state. */}
             {isSidebarOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                    className="fixed inset-0 bg-black/70 z-30 md:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 ></div>
             )}
 
-            {/* FIX: Replaced 'isOpen' with 'isSidebarOpen' to correctly adjust the main content margin based on the sidebar's state. */}
             <div className={`flex flex-col flex-1 h-screen overflow-y-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
                  {/* Mobile Header */}
-                <header className="md:hidden sticky top-0 bg-bkg/80 backdrop-blur-sm z-10 flex items-center justify-between p-4 border-b border-border">
+                <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-between p-4 border-b border-border">
                     <button onClick={() => setIsSidebarOpen(true)} className="p-1 text-text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />

@@ -46,7 +46,7 @@ const MarketplaceIcon = () => (
 
 const SettingsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
 
@@ -73,15 +73,15 @@ const NavItem: React.FC<{
                 onClick={onClick}
                 className={`flex items-center w-full py-3 rounded-lg transition-colors duration-200 ${
                     isActive
-                        ? 'bg-white text-primary font-bold'
-                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'
                 } ${showText ? 'px-4' : 'px-2 justify-center'}`}
             >
                 <span className={`${showText ? 'mr-4' : 'mr-0'}`}>{icon}</span>
                 <span className={`transition-opacity duration-200 ${showText ? 'opacity-100' : 'opacity-0 absolute'}`}>{label}</span>
             </button>
             {!showText && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-surface text-text-primary text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap border border-border">
                     {label}
                 </div>
             )}
@@ -122,10 +122,10 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
 
 
     return (
-        <aside className={`bg-primary h-screen flex flex-col p-4 fixed z-40 transition-all duration-300 ease-in-out w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${isOpen ? 'md:w-64' : 'md:w-20'}`}>
+        <aside className={`bg-surface h-screen flex flex-col p-4 fixed z-40 transition-all duration-300 ease-in-out w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${isOpen ? 'md:w-64' : 'md:w-20'}`}>
             <div className={`flex items-center mb-8 transition-all duration-300 ${isOpen ? 'px-2' : 'px-0 justify-center'}`}>
-                 <span className={`font-bold text-white text-2xl transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>FinTrack</span>
-                 <span className={`font-bold text-white text-3xl transition-opacity duration-200 ${!isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>F</span>
+                 <span className={`font-bold text-text-primary text-2xl transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>Fin<span className="text-primary">Track</span></span>
+                 <span className={`font-bold text-primary text-3xl transition-opacity duration-200 ${!isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>F</span>
             </div>
 
             <nav className="flex-grow space-y-2">
@@ -142,7 +142,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
             </nav>
 
             <div className="mt-auto">
-                 <div className="border-t border-white/20 pt-4 space-y-2">
+                 <div className="border-t border-border pt-4 space-y-2">
                     <NavItem
                         icon={<SettingsIcon />}
                         label="Ajustes"
@@ -159,14 +159,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, setIsOpen, currentVie
                     />
                 </div>
                 <div className={`flex items-center mt-6 p-2 transition-all duration-300 ${!isOpen ? 'justify-center': ''}`}>
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0">
+                    <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center font-bold text-primary flex-shrink-0">
                         {username ? username.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div className={`ml-3 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                        <p className="font-semibold text-white text-sm truncate">{username || 'Usuario'}</p>
+                        <p className="font-semibold text-text-primary text-sm truncate">{username || 'Usuario'}</p>
                     </div>
                 </div>
-                 <button onClick={() => setIsOpen(!isOpen)} className="w-full mt-4 text-white/80 hover:text-white hidden md:flex items-center justify-center py-2">
+                 <button onClick={() => setIsOpen(!isOpen)} className="w-full mt-4 text-text-secondary hover:text-text-primary hidden md:flex items-center justify-center py-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform duration-300 ${!isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                  </button>
             </div>

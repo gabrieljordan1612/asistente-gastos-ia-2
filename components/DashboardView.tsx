@@ -5,14 +5,14 @@ import type { Expense, Budget, Category } from '../types';
 
 const formatCurrency = (amount: number) => `S/. ${amount.toFixed(2)}`;
 
-const SummaryCard: React.FC<{ title: string; value: string | number; color?: 'primary' | 'green' | 'red' | 'gray' | 'yellow'; message?: string }> = ({ title, value, color = 'primary', message }) => {
+const SummaryCard: React.FC<{ title: string; value: string | number; color?: 'primary' | 'secondary' | 'red' | 'gray' | 'yellow'; message?: string }> = ({ title, value, color = 'primary', message }) => {
     
     const colorClasses = {
         primary: 'text-primary',
-        green: 'text-green-600',
-        red: 'text-red-600',
+        secondary: 'text-secondary',
+        red: 'text-red-500',
         gray: 'text-text-secondary',
-        yellow: 'text-yellow-600',
+        yellow: 'text-yellow-500',
     };
 
     return (
@@ -27,7 +27,7 @@ const SummaryCard: React.FC<{ title: string; value: string | number; color?: 'pr
 const RecentTransactionItem: React.FC<{ transaction: Expense, category?: Category }> = ({ transaction, category }) => (
   <div className="flex items-center justify-between py-3">
     <div className="flex items-center space-x-4">
-      {getCategoryIcon(transaction.category, category?.color || 'gray', 'sm')}
+      {getCategoryIcon(transaction.category, 'sm')}
       <div>
         <p className="font-semibold text-text-primary text-sm">{transaction.description || transaction.category}</p>
         <p className="text-xs text-text-secondary">{new Date(transaction.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</p>
@@ -82,7 +82,7 @@ const DashboardView: React.FC<{
        {/* Mobile only FAB */}
       <button
         onClick={onAddExpenseClick}
-        className="md:hidden fixed bottom-6 right-6 bg-primary text-white rounded-full p-4 shadow-lg z-20 hover:bg-blue-700 transition-transform duration-300 hover:scale-110"
+        className="md:hidden fixed bottom-6 right-6 bg-primary text-background font-bold rounded-full p-4 shadow-lg z-20 hover:bg-yellow-500 transition-transform duration-300 hover:scale-110 animate-glow"
         aria-label="Agregar gasto"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -98,7 +98,7 @@ const DashboardView: React.FC<{
         </div>
         <button
             onClick={onAddExpenseClick}
-            className="bg-primary text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20 flex items-center space-x-2"
+            className="bg-primary text-background font-bold py-2 px-5 rounded-lg hover:bg-yellow-500 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20 flex items-center space-x-2 animate-glow"
             aria-label="Agregar gasto"
         >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -114,7 +114,7 @@ const DashboardView: React.FC<{
             <SummaryCard 
                 title="Presupuesto Restante" 
                 value={formatCurrency(remainingBudget)} 
-                color={remainingBudget >= 0 ? 'green' : 'red'}
+                color={remainingBudget >= 0 ? 'secondary' : 'red'}
                 message={remainingBudget < 0 ? '¡Has excedido tu presupuesto!' : '¡Sigue así!'}
              />
         ) : (
