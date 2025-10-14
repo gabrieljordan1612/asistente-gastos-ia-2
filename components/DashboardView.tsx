@@ -16,7 +16,7 @@ const SummaryCard: React.FC<{ title: string; value: string | number; color?: 'pr
     };
 
     return (
-        <div className="bg-surface rounded-xl p-6 border border-border shadow-sm">
+        <div className="bg-surface rounded-xl p-6 border border-border shadow-subtle">
             <h3 className="text-text-secondary font-semibold">{title}</h3>
             <p className={`text-3xl font-bold mt-2 ${colorClasses[color]}`}>{value}</p>
             {message && <p className="text-xs text-text-secondary mt-1">{message}</p>}
@@ -82,7 +82,7 @@ const DashboardView: React.FC<{
        {/* Mobile only FAB */}
       <button
         onClick={onAddExpenseClick}
-        className="md:hidden fixed bottom-6 right-6 bg-primary text-background font-bold rounded-full p-4 shadow-lg z-20 hover:bg-yellow-500 transition-transform duration-300 hover:scale-110 animate-glow"
+        className="md:hidden fixed bottom-6 right-6 bg-primary text-white font-bold rounded-full p-4 shadow-lg z-20 hover:bg-primary-dark transition-transform duration-300 hover:scale-110 animate-glow"
         aria-label="Agregar gasto"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -98,7 +98,7 @@ const DashboardView: React.FC<{
         </div>
         <button
             onClick={onAddExpenseClick}
-            className="bg-primary text-background font-bold py-2 px-5 rounded-lg hover:bg-yellow-500 transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20 flex items-center space-x-2 animate-glow"
+            className="bg-primary text-white font-bold py-2 px-5 rounded-lg hover:bg-primary-dark transition-transform duration-300 hover:scale-105 shadow-lg shadow-primary/20 flex items-center space-x-2 animate-glow"
             aria-label="Agregar gasto"
         >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -133,7 +133,7 @@ const DashboardView: React.FC<{
       </div>
 
        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-          <div className="lg:col-span-3 bg-surface p-6 rounded-xl border border-border shadow-sm">
+          <div className="lg:col-span-3 bg-surface p-6 rounded-xl border border-border shadow-subtle">
               <ExpenseChart 
                 expenses={expenses}
                 categories={categories}
@@ -144,7 +144,7 @@ const DashboardView: React.FC<{
               />
           </div>
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
+            <div className="bg-surface p-6 rounded-xl border border-border shadow-subtle">
               <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-bold">Gastos Recientes</h2>
               </div>

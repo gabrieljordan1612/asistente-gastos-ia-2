@@ -61,12 +61,12 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
     return (
         <div className="min-h-screen flex font-sans">
             {/* Left Panel - Branding */}
-            <div className="hidden lg:flex w-1/2 bg-gray-50 items-center justify-center p-12 text-text-primary flex-col relative overflow-hidden border-r border-border">
-                <div className="absolute -top-16 -left-16 w-72 h-72 bg-primary/10 rounded-full"></div>
-                <div className="absolute -bottom-24 -right-10 w-80 h-80 bg-primary/10 rounded-full"></div>
+            <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-sky-50 to-blue-100 items-center justify-center p-12 text-text-primary flex-col relative overflow-hidden border-r border-border">
+                <div className="absolute -top-16 -left-16 w-72 h-72 bg-sky-100/50 rounded-full"></div>
+                <div className="absolute -bottom-24 -right-10 w-80 h-80 bg-sky-100/50 rounded-full"></div>
                 
                 <div className="z-10 text-center">
-                    <h1 className="text-5xl font-bold tracking-tight text-gray-900">FinTrack</h1>
+                    <h1 className="text-5xl font-bold tracking-tight text-slate-900">Fin<span className="text-primary">Track</span></h1>
                     <p className="mt-4 text-xl text-text-secondary">Toma el control de tus finanzas con la claridad de la IA.</p>
                 </div>
             </div>
@@ -143,7 +143,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                                 />
                                 <label htmlFor="remember-me" className="font-medium text-text-secondary">Recordarme</label>
                             </div>
-                            <button type="button" onClick={handlePasswordReset} className="font-bold text-primary hover:text-amber-600">
+                            <button type="button" onClick={handlePasswordReset} className="font-bold text-primary hover:text-primary-dark">
                                 ¿Olvidaste tu contraseña?
                             </button>
                         </div>
@@ -152,7 +152,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-bold text-white bg-primary hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all duration-300"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-bold text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-70 transition-all duration-300"
                             >
                                 {loading ? <Spinner /> : 'Acceder'}
                             </button>
@@ -160,7 +160,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigateToSignUp, onNavigateT
                     </form>
                     <p className="mt-8 text-center text-sm text-text-secondary">
                         ¿No tienes una cuenta?{' '}
-                        <button onClick={onNavigateToSignUp} className="font-bold text-primary hover:text-amber-600">
+                        <button onClick={onNavigateToSignUp} className="font-bold text-primary hover:text-primary-dark">
                             Regístrate
                         </button>
                     </p>

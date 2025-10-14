@@ -138,10 +138,10 @@ const ExpenseCalendarChart: React.FC<{
                     <div style={{ width: '100%', height: 250 }}>
                         <ResponsiveContainer>
                             <BarChart data={categoryChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                                 <XAxis 
                                     dataKey="name" 
-                                    stroke="#9CA3AF" 
+                                    stroke="#64748B" 
                                     fontSize={11} 
                                     tickLine={false} 
                                     axisLine={false} 
@@ -151,14 +151,14 @@ const ExpenseCalendarChart: React.FC<{
                                     height={60}
                                 />
                                 <YAxis 
-                                    stroke="#9CA3AF" 
+                                    stroke="#64748B" 
                                     fontSize={11} 
                                     tickLine={false} 
                                     axisLine={false} 
                                     tickFormatter={(value) => `S/.${value}`} 
                                     width={60} 
                                 />
-                                <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#374151'}}/>
+                                <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F8FAFC'}}/>
                                 <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                                     {categoryChartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -185,19 +185,19 @@ const ExpenseCalendarChart: React.FC<{
                  <div style={{ width: '100%', height: 250 }}>
                     <ResponsiveContainer>
                         <BarChart data={dailyChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} interval={0} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                            <XAxis dataKey="name" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} interval={0} />
                             <YAxis 
-                                stroke="#9CA3AF" 
+                                stroke="#64748B" 
                                 fontSize={11} 
                                 tickLine={false} 
                                 axisLine={false} 
                                 tickFormatter={(value) => `S/.${value}`} 
                                 width={60} 
                             />
-                            <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#374151'}}/>
+                            <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F8FAFC'}}/>
                             {/* FIX: Use the hex value from the imported PALETTE for the bar color. */}
-                            <Bar dataKey="amount" fill={barColor && PALETTE[barColor] ? PALETTE[barColor].hex : '#3B82F6'} radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="amount" fill={barColor && PALETTE[barColor] ? PALETTE[barColor].hex : '#0EA5E9'} radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

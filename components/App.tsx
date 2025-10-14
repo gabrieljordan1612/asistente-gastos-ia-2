@@ -9,7 +9,6 @@ import SettingsView from './components/SettingsView';
 import AddExpenseModal from './components/AddExpenseModal';
 import ConfirmationModal from './components/ConfirmationModal';
 import { getExpenses, addExpense, deleteExpense, getBudgets, deleteBudget, getIncome, addIncome, deleteIncome, upsertBudget, updateExpense, updateIncome } from './services/supabaseService';
-// FIX: Import the View type from the central types file.
 import type { Expense, Budget, Income, Plan, View, Category } from './types';
 import LandingPage from './components/LandingPage';
 import SignInPage from './components/SignInPage';
@@ -24,6 +23,7 @@ import IncomeView from './components/IncomeView';
 import AddIncomeModal from './components/AddIncomeModal';
 import BudgetSidebar from './components/BudgetSidebar';
 import { PREDEFINED_CATEGORIES } from './constants';
+import NotificationToast from './components/NotificationToast';
 
 
 const defaultCategories: Category[] = [
@@ -40,7 +40,6 @@ const getInitialCategories = (): Category[] => {
         const stored = localStorage.getItem('user-categories');
         if (stored) {
             const parsed = JSON.parse(stored);
-            // Basic validation
             if (Array.isArray(parsed) && parsed.every(c => 'id' in c && 'name' in c && 'color' in c)) {
                  return parsed;
             }
@@ -87,10 +86,8 @@ const App: React.FC = () => {
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{ type: 'expense' | 'budget' | 'income' | 'category', id: number | string } | null>(null);
     
-    // For checkout page
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
-    // Persist categories to localStorage whenever they change
     useEffect(() => {
         try {
             localStorage.setItem('user-categories', JSON.stringify(categories));
@@ -98,6 +95,15 @@ const App: React.FC = () => {
             console.error("Failed to save categories to localStorage", e);
         }
     }, [categories]);
+
+    useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => {
+                setNotification(null);
+            }, 4000); // Auto-dismiss after 4 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
     
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -112,7 +118,6 @@ const App: React.FC = () => {
             setLoading(false);
         });
 
-        // Initial check
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
@@ -121,14 +126,9 @@ const App: React.FC = () => {
         });
         
         const handleResize = () => {
-          if (window.innerWidth < 768) {
-            setIsSidebarOpen(false);
-          } else {
-            setIsSidebarOpen(true);
-          }
+          setIsSidebarOpen(window.innerWidth >= 768);
         };
         window.addEventListener('resize', handleResize);
-
 
         return () => {
             subscription.unsubscribe();
@@ -161,11 +161,12 @@ const App: React.FC = () => {
         setExpenses([]);
         setBudgets([]);
         setIncome([]);
+        localStorage.removeItem('user-categories');
+        setCategories(defaultCategories);
         setCurrentView('dashboard');
         setAuthView('landing');
     };
 
-    // --- Category Handlers ---
     const handleSaveCategory = (category: Category) => {
         setCategories(prev => {
             const existingIndex = prev.findIndex(c => c.id === category.id);
@@ -182,28 +183,37 @@ const App: React.FC = () => {
     const requestDeleteCategory = (id: string) => {
         const categoryToDelete = categories.find(c => c.id === id);
         if (categoryToDelete?.isPredefined) {
-            alert("No se pueden eliminar las categorías predefinidas.");
+            setNotification({ type: 'error', message: 'No se pueden eliminar las categorías predefinidas.' });
             return;
         }
         setItemToDelete({ type: 'category', id });
         setIsConfirmationModalOpen(true);
     };
 
-
-    // --- Expense Handlers ---
     const handleSaveExpense = async (expenseData: Partial<Omit<Expense, 'user_id' | 'created_at'>>) => {
         if (expenseData.id) { // UPDATE
             const { id, ...updateData } = expenseData;
-            const success = await updateExpense(id, updateData);
-            if (success) {
-                await fetchData();
+            const updatedExpense = await updateExpense(id, updateData);
+            if (updatedExpense) {
+                setExpenses(prev => 
+                    prev.map(exp => exp.id === updatedExpense.id ? updatedExpense : exp)
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                );
+                setNotification({ type: 'success', message: 'Gasto actualizado satisfactoriamente.' });
             } else {
-                console.error("Failed to update expense on the server.");
+                setNotification({ type: 'error', message: 'Error al actualizar el gasto.' });
+                await fetchData(); // Fallback
             }
         } else { // ADD
             const newExpense = await addExpense(expenseData as Omit<Expense, 'id' | 'user_id' | 'created_at'>);
             if (newExpense) {
-               await fetchData();
+               setExpenses(prev => 
+                   [...prev, newExpense]
+                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+               );
+               setNotification({ type: 'success', message: 'Gasto agregado correctamente.' });
+            } else {
+               setNotification({ type: 'error', message: 'Error al agregar el gasto.' });
             }
         }
         handleCloseExpenseModal();
@@ -224,52 +234,28 @@ const App: React.FC = () => {
         setExpenseToEdit(null);
     };
 
-    // --- Income Handlers ---
     const handleSaveIncome = async (incomeData: Partial<Omit<Income, 'user_id' | 'created_at'>>) => {
         if (incomeData.id) { // UPDATE
-            const originalIncome = income.find(i => i.id === incomeData.id);
-            if (!originalIncome) {
-                console.error("Original income not found for update.");
-                handleCloseIncomeModal();
-                return;
-            }
-            
-            const amountDifference = (incomeData.amount || 0) - originalIncome.amount;
-
-            const { id, ...updateData } = incomeData;
-            const success = await updateIncome(id, updateData as Omit<Income, 'id' | 'user_id' | 'created_at'>);
-            
-            if (success) {
-                if (amountDifference !== 0) {
-                    const incomeMonth = incomeData.date!.slice(0, 7);
-                    const mainBudgetForMonth = budgets.find(b => b.month === incomeMonth && b.category === 'General');
-                    if (mainBudgetForMonth) {
-                        const newAmount = mainBudgetForMonth.amount + amountDifference;
-                        await upsertBudget({ month: incomeMonth, category: 'General', amount: newAmount });
-                    }
-                }
-                await fetchData();
+            const updatedIncome = await updateIncome(incomeData.id, incomeData as Omit<Income, 'id' | 'user_id' | 'created_at'>);
+            if (updatedIncome) {
+                setIncome(prev => prev.map(i => i.id === updatedIncome.id ? updatedIncome : i).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                setNotification({ type: 'success', message: 'Ingreso actualizado correctamente.' });
+                await fetchData(); // Refetch budgets in case they are affected
             } else {
-                console.error("Failed to update income.");
+                setNotification({ type: 'error', message: 'Error al actualizar el ingreso.' });
             }
         } else { // ADD
             const newIncome = await addIncome(incomeData as Omit<Income, 'id' | 'user_id' | 'created_at'>);
             if (newIncome) {
-                const incomeMonth = newIncome.date.slice(0, 7);
-                const mainBudgetForMonth = budgets.find(b => b.month === incomeMonth && b.category === 'General');
-
-                if (mainBudgetForMonth) {
-                    const newAmount = mainBudgetForMonth.amount + newIncome.amount;
-                    await upsertBudget({ month: incomeMonth, category: 'General', amount: newAmount });
-                }
-                await fetchData();
+                setIncome(prev => [...prev, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                setNotification({ type: 'success', message: 'Ingreso agregado correctamente.' });
+                await fetchData(); // Refetch budgets
             } else {
-                console.error("Failed to add income.");
+                setNotification({ type: 'error', message: 'Error al agregar el ingreso.' });
             }
         }
         handleCloseIncomeModal();
     };
-
 
     const requestEditIncome = (incomeItem: Income) => {
         setIncomeToEdit(incomeItem);
@@ -286,55 +272,67 @@ const App: React.FC = () => {
         setIsConfirmationModalOpen(true);
     };
 
-    // --- Budget Handlers ---
     const requestDeleteBudget = (id: number) => {
         setItemToDelete({ type: 'budget', id });
         setIsConfirmationModalOpen(true);
     };
     
-    // --- Confirmation Modal Handler ---
     const handleConfirmDelete = async () => {
         if (!itemToDelete) return;
 
-        if (itemToDelete.type === 'expense') {
-            const success = await deleteExpense(itemToDelete.id as number);
-            if (success) await fetchData();
-        } else if (itemToDelete.type === 'budget') {
-            const success = await deleteBudget(itemToDelete.id as number);
-            if (success) await fetchData();
-        } else if (itemToDelete.type === 'category') {
-            setCategories(prev => prev.filter(c => c.id !== itemToDelete.id));
-        } else if (itemToDelete.type === 'income') {
-            const incomeToDelete = income.find(i => i.id === itemToDelete.id);
-            if (!incomeToDelete) {
-                console.error("Could not find income to delete in local state.");
-                setIsConfirmationModalOpen(false);
-                setItemToDelete(null);
-                return;
+        let success = false;
+        let successMessage = '';
+        let errorMessage = '';
+
+        try {
+            if (itemToDelete.type === 'expense') {
+                success = await deleteExpense(itemToDelete.id as number);
+                if (success) {
+                    setExpenses(prev => prev.filter(e => e.id !== itemToDelete.id));
+                    successMessage = 'Gasto eliminado correctamente.';
+                } else {
+                    errorMessage = 'No se pudo eliminar el gasto.';
+                }
+            } else if (itemToDelete.type === 'income') {
+                success = await deleteIncome(itemToDelete.id as number);
+                if (success) {
+                    setIncome(prev => prev.filter(i => i.id !== itemToDelete.id));
+                    successMessage = 'Ingreso eliminado correctamente.';
+                    await fetchData(); // Refetch related data like budgets
+                } else {
+                    errorMessage = 'No se pudo eliminar el ingreso.';
+                }
+            } else if (itemToDelete.type === 'budget') {
+                success = await deleteBudget(itemToDelete.id as number);
+                if (success) {
+                    setBudgets(prev => prev.filter(b => b.id !== itemToDelete.id));
+                    successMessage = 'Presupuesto eliminado correctamente.';
+                } else {
+                    errorMessage = 'No se pudo eliminar el presupuesto.';
+                }
+            } else if (itemToDelete.type === 'category') {
+                setCategories(prev => prev.filter(c => c.id !== itemToDelete.id));
+                success = true; // Local operation
+                successMessage = 'Categoría eliminada correctamente.';
             }
-            
-            const success = await deleteIncome(itemToDelete.id as number);
 
             if (success) {
-                const incomeMonth = incomeToDelete.date.slice(0, 7);
-                const mainBudgetForMonth = budgets.find(b => b.month === incomeMonth && b.category === 'General');
-
-                if (mainBudgetForMonth) {
-                    const newAmount = mainBudgetForMonth.amount - incomeToDelete.amount;
-                    await upsertBudget({ month: incomeMonth, category: 'General', amount: newAmount });
-                }
-                await fetchData();
+                setNotification({ type: 'success', message: successMessage });
+            } else if (errorMessage) {
+                setNotification({ type: 'error', message: errorMessage });
             }
+        } catch (error) {
+            setNotification({ type: 'error', message: 'Ocurrió un error inesperado.' });
+        } finally {
+            setIsConfirmationModalOpen(false);
+            setItemToDelete(null);
         }
-
-        setIsConfirmationModalOpen(false);
-        setItemToDelete(null);
     };
 
     
-    const totalExpensesForMonth = budgets.length > 0 ? expenses
+    const totalExpensesForMonth = expenses
           .filter(e => e.date.startsWith(new Date().toISOString().slice(0, 7)))
-          .reduce((acc, e) => acc + e.amount, 0) : 0;
+          .reduce((acc, e) => acc + e.amount, 0);
           
     const mainBudgetForMonth = budgets.find(b => b.month === new Date().toISOString().slice(0, 7) && b.category === 'General') || null;
 
@@ -376,6 +374,7 @@ const App: React.FC = () => {
     }
     
     if (!session) {
+        // ... (auth views remain unchanged)
         switch (authView) {
             case 'signIn':
                 return <SignInPage 
@@ -415,6 +414,7 @@ const App: React.FC = () => {
 
     return (
         <div className="bg-background min-h-screen flex text-text-primary font-sans">
+            {notification && <NotificationToast notification={notification} onClose={() => setNotification(null)} />}
             <LeftSidebar 
                 isOpen={isSidebarOpen}
                 setIsOpen={setIsSidebarOpen}
@@ -424,7 +424,6 @@ const App: React.FC = () => {
                 username={username}
             />
             
-            {/* Backdrop for mobile */}
             {isSidebarOpen && (
                 <div 
                     className="fixed inset-0 bg-black/70 z-30 md:hidden"
@@ -433,7 +432,6 @@ const App: React.FC = () => {
             )}
 
             <div className={`flex flex-col flex-1 h-screen overflow-y-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
-                 {/* Mobile Header */}
                 <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-between p-4 border-b border-border">
                     <button onClick={() => setIsSidebarOpen(true)} className="p-1 text-text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -441,7 +439,7 @@ const App: React.FC = () => {
                         </svg>
                     </button>
                     <h1 className="text-xl font-bold text-text-primary capitalize">{currentView === 'offers' ? 'Marketplace' : currentView}</h1>
-                    <div className="w-8"></div> {/* Placeholder for alignment */}
+                    <div className="w-8"></div>
                 </header>
 
                 <main className="flex-1 p-4 sm:p-8">

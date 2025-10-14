@@ -11,7 +11,7 @@ const formatCurrency = (amount: number) => `S/. ${amount.toFixed(2)}`;
 const getProgressBarColor = (percentage: number) => {
     if (percentage > 100) return 'bg-red-500';
     if (percentage > 80) return 'bg-yellow-500';
-    return 'bg-secondary';
+    return 'bg-primary';
 };
 
 const BudgetProgressBar: React.FC<{ spent: number; total: number }> = ({ spent, total }) => {
@@ -108,7 +108,7 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
         <div>
             <h1 className="text-3xl font-bold text-text-primary mb-6">Presupuestos</h1>
             
-            <div className="bg-surface border border-border rounded-xl shadow-sm p-6 mb-8">
+            <div className="bg-surface border border-border rounded-xl shadow-subtle p-6 mb-8">
                 {mainBudget ? (
                     <div>
                         <div className="flex justify-between items-start">
@@ -137,7 +137,7 @@ const BudgetView: React.FC<{ expenses: Expense[], categories: Category[], onBudg
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                         <p className="mt-4 font-semibold text-text-primary">Aún no has definido tu presupuesto mensual.</p>
                         <p className="text-sm text-text-secondary">Establece un límite para empezar a controlar tus gastos.</p>
-                        <button onClick={() => handleOpenModal('General')} className="mt-4 bg-primary text-background font-bold py-2 px-4 rounded-lg hover:bg-yellow-500 transition-transform duration-300 hover:scale-105 animate-glow">
+                        <button onClick={() => handleOpenModal('General')} className="mt-4 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary-dark transition-transform duration-300 hover:scale-105 animate-glow">
                             Establecer Presupuesto Mensual
                         </button>
                     </div>

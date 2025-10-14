@@ -9,18 +9,18 @@ const IconWrapper: React.FC<{ children: React.ReactNode; size?: 'sm' | 'lg', cla
     );
 };
 
-// Paleta de colores mejorada
+// Paleta de colores para iconos, alineada con el nuevo tema claro
 const colors = {
-    food: { bg: 'bg-orange-100', primary: 'text-orange-600', secondary: 'text-orange-400' },
-    transport: { bg: 'bg-blue-100', primary: 'text-blue-600', secondary: 'text-blue-400' },
-    health: { bg: 'bg-red-100', primary: 'text-red-600', secondary: 'text-red-400' },
-    clothes: { bg: 'bg-purple-100', primary: 'text-purple-600', secondary: 'text-purple-400' },
-    entertainment: { bg: 'bg-yellow-100', primary: 'text-yellow-600', secondary: 'text-yellow-400' },
-    services: { bg: 'bg-teal-100', primary: 'text-teal-600', secondary: 'text-teal-400' },
-    default: { bg: 'bg-border', primary: 'text-text-secondary', secondary: 'text-gray-400' }
+    food: { bg: 'bg-orange-50', primary: 'text-orange-500', secondary: 'text-orange-400' },
+    transport: { bg: 'bg-sky-50', primary: 'text-sky-500', secondary: 'text-sky-400' },
+    health: { bg: 'bg-red-50', primary: 'text-red-500', secondary: 'text-red-400' },
+    clothes: { bg: 'bg-purple-50', primary: 'text-purple-500', secondary: 'text-purple-400' },
+    entertainment: { bg: 'bg-yellow-50', primary: 'text-yellow-500', secondary: 'text-yellow-400' },
+    services: { bg: 'bg-teal-50', primary: 'text-teal-500', secondary: 'text-teal-400' },
+    default: { bg: 'bg-slate-100', primary: 'text-slate-500', secondary: 'text-slate-400' }
 };
 
-export const FoodIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const FoodIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.food.bg}>
@@ -33,7 +33,7 @@ export const FoodIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
 };
 
 
-export const TransportIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const TransportIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.transport.bg}>
@@ -45,7 +45,7 @@ export const TransportIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     );
 };
 
-export const HealthIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const HealthIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.health.bg}>
@@ -57,7 +57,7 @@ export const HealthIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     );
 };
 
-export const ClothesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const ClothesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.clothes.bg}>
@@ -68,7 +68,7 @@ export const ClothesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     );
 };
 
-export const EntertainmentIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const EntertainmentIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.entertainment.bg}>
@@ -80,7 +80,7 @@ export const EntertainmentIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) =>
     );
 };
 
-export const ServicesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const ServicesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.services.bg}>
@@ -92,31 +92,30 @@ export const ServicesIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     );
 };
 
-export const DefaultIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
+const DefaultIcon: React.FC<{ size?: 'sm' | 'lg' }> = ({ size }) => {
     const iconSizeClasses = size === 'lg' ? 'h-7 w-7' : 'h-5 w-5';
     return (
         <IconWrapper size={size} className={colors.default.bg}>
-            <svg xmlns="http://www.w3.org/2000/svg" className={iconSizeClasses} fill="currentColor" viewBox="0 0 24 24">
-                <path className={colors.default.primary} d="M14 4.001H8.667a1.333 1.333 0 00-1.334 1.333v13.333A1.333 1.333 0 008.667 20h6.666a1.333 1.333 0 001.334-1.333V8.667a.667.667 0 00-.2-.467l-4-4a.666.666 0 00-.466-.2zM14 8.667h1.667L12 5v3.667z" />
+            <svg xmlns="http://www.w3.org/2000/svg" className={iconSizeClasses} viewBox="0 0 24 24" fill="currentColor">
+                 <path className={colors.default.primary} d="M14 4.001H8.667a1.333 1.333 0 00-1.334 1.333v13.333A1.333 1.333 0 008.667 20h6.666a1.333 1.333 0 001.334-1.333V8.667a.667.667 0 00-.2-.467l-4-4a.666.666 0 00-.466-.2zM14 8.667h1.667L12 5v3.667z" />
             </svg>
         </IconWrapper>
     );
 };
 
-
-export const getCategoryIcon = (category: string, size: 'sm' | 'lg' = 'sm') => {
-    switch (category.toLowerCase()) {
-        case 'comida':
+export const getCategoryIcon = (categoryName: string, size: 'sm' | 'lg' = 'sm') => {
+    switch (categoryName) {
+        case 'Comida':
             return <FoodIcon size={size} />;
-        case 'transporte':
+        case 'Transporte':
             return <TransportIcon size={size} />;
-        case 'salud':
+        case 'Salud':
             return <HealthIcon size={size} />;
-        case 'ropa':
+        case 'Ropa':
             return <ClothesIcon size={size} />;
-        case 'entretenimiento':
+        case 'Entretenimiento':
             return <EntertainmentIcon size={size} />;
-        case 'servicios':
+        case 'Servicios':
             return <ServicesIcon size={size} />;
         default:
             return <DefaultIcon size={size} />;

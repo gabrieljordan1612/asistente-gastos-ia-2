@@ -19,7 +19,7 @@ const BudgetSidebar: React.FC<BudgetSidebarProps> = ({ isOpen, setIsOpen, mainBu
     const getProgressBarColor = (p: number) => {
         if (p > 95) return 'bg-red-500';
         if (p > 75) return 'bg-yellow-500';
-        return 'bg-green-500';
+        return 'bg-primary';
     };
 
     const barColor = getProgressBarColor(percentage);
@@ -29,7 +29,7 @@ const BudgetSidebar: React.FC<BudgetSidebarProps> = ({ isOpen, setIsOpen, mainBu
             {/* Botón de activación */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed top-1/2 -translate-y-1/2 right-0 z-50 bg-surface border-l border-t border-b border-border rounded-l-lg p-2 shadow-lg transition-transform duration-300 ${isOpen ? 'translate-x-[-320px]' : 'translate-x-0'}`}
+                className={`fixed top-1/2 -translate-y-1/2 right-0 z-50 bg-surface border-l border-t border-b border-border rounded-l-lg p-2 shadow-medium transition-transform duration-300 ${isOpen ? 'translate-x-[-320px]' : 'translate-x-0'}`}
                 aria-label="Toggle Budget Sidebar"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -69,7 +69,7 @@ const BudgetSidebar: React.FC<BudgetSidebarProps> = ({ isOpen, setIsOpen, mainBu
                                 <hr className="border-border"/>
                                 <div>
                                     <p className="text-sm text-text-secondary">{remaining >= 0 ? 'Restante' : 'Excedido'}</p>
-                                    <p className={`text-3xl font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    <p className={`text-3xl font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                                         {formatCurrency(Math.abs(remaining))}
                                     </p>
                                 </div>
@@ -81,7 +81,7 @@ const BudgetSidebar: React.FC<BudgetSidebarProps> = ({ isOpen, setIsOpen, mainBu
                     ) : (
                         <div className="flex-grow flex flex-col items-center justify-center text-center">
                             <p className="text-text-secondary">Aún no has definido un presupuesto para este mes.</p>
-                            <button onClick={() => { onEditClick(); setIsOpen(false); }} className="mt-4 w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            <button onClick={() => { onEditClick(); setIsOpen(false); }} className="mt-4 w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors">
                                 + Establecer Presupuesto
                             </button>
                         </div>

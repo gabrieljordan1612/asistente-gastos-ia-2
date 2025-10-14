@@ -11,21 +11,26 @@
         theme: {
           extend: {
             colors: {
-              'background': '#F9FAFB', // Off-white/light gray
-              'surface': '#FFFFFF',    // White for cards, modals
-              'primary': '#F59E0B',    // Amber/Gold for primary actions, highlights
-              'secondary': '#10B981',  // Emerald Green for success, income
-              'border': '#E5E7EB',      // Light gray for borders
-              'text-primary': '#1F2937', // Dark gray for primary text
-              'text-secondary': '#6B7280',// Medium gray for secondary text
-              'text-tertiary': '#9CA3AF', // Lighter gray for subtle text
+              'background': '#F8FAFC', // slate-50
+              'surface': '#FFFFFF',    // white
+              'primary': '#0EA5E9',    // sky-500
+              'primary-dark': '#0284C7', // sky-600
+              'secondary': '#10B981',  // Emerald Green for success states
+              'border': '#E2E8F0',      // slate-200
+              'text-primary': '#1E293B', // slate-800
+              'text-secondary': '#64748B',// slate-500
+              'text-tertiary': '#94A3B8', // slate-400
               
-              // Keep semantic colors for status
               'red-500': '#EF4444',
               'green-600': '#16A34A',
+              'yellow-500': '#EAB308',
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
+            },
+            boxShadow: {
+              'subtle': '0 4px 12px rgba(0, 0, 0, 0.05)',
+              'medium': '0 8px 24px rgba(0, 0, 0, 0.08)',
             },
             animation: {
               scroll: 'scroll 60s linear infinite',
@@ -49,10 +54,10 @@
               },
               glow: {
                 '0%': {
-                  boxShadow: '0 0 5px 0px rgba(245, 158, 11, 0.4)',
+                  boxShadow: '0 0 5px 0px rgba(14, 165, 233, 0.4)',
                 },
                 '100%': {
-                  boxShadow: '0 0 20px 2px rgba(245, 158, 11, 0.2)',
+                  boxShadow: '0 0 20px 2px rgba(14, 165, 233, 0.2)',
                 }
               },
             },
