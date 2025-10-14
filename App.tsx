@@ -101,14 +101,12 @@ const App: React.FC = () => {
     
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setUsername(session?.user?.user_metadata?.username ?? session?.user?.email ?? null);
-            
             if (_event === 'PASSWORD_RECOVERY') {
                 setAuthView('resetPassword');
             }
-            
+            setSession(session);
+            setUser(session?.user ?? null);
+            setUsername(session?.user?.user_metadata?.username ?? session?.user?.email ?? null);
             setLoading(false);
         });
 
@@ -151,10 +149,10 @@ const App: React.FC = () => {
     }, [user]);
 
     useEffect(() => {
-        if(session) {
+        if(session && authView !== 'resetPassword') {
             fetchData();
         }
-    }, [session, fetchData]);
+    }, [session, authView, fetchData]);
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -371,6 +369,14 @@ const App: React.FC = () => {
     if (loading) {
         return <div className="h-screen w-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div></div>;
     }
+
+    if (authView === 'resetPassword') {
+        return <ResetPasswordPage onPasswordUpdated={async () => {
+            await supabase.auth.signOut();
+            setNotification({type: 'success', message: 'Contraseña actualizada con éxito. Por favor, inicia sesión.'});
+            setAuthView('signIn');
+        }} />;
+    }
     
     if (!session) {
         switch (authView) {
@@ -389,11 +395,6 @@ const App: React.FC = () => {
                 />;
             case 'awaitingConfirmation':
                 return <AwaitingConfirmationPage onNavigateToSignIn={() => setAuthView('signIn')} />;
-            case 'resetPassword':
-                return <ResetPasswordPage onPasswordUpdated={() => {
-                    setNotification({type: 'success', message: 'Contraseña actualizada con éxito. Por favor, inicia sesión.'});
-                    setAuthView('signIn');
-                }} />;
             case 'checkout':
                 if (!selectedPlan) {
                     setAuthView('landing');
