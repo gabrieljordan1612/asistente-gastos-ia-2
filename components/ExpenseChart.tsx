@@ -137,11 +137,28 @@ const ExpenseCalendarChart: React.FC<{
                 {categoryChartData.length > 0 ? (
                     <div style={{ width: '100%', height: 250 }}>
                         <ResponsiveContainer>
-                            <BarChart data={categoryChartData} margin={{ top: 5, right: 0, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                <XAxis dataKey="name" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} interval={0} />
-                                <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `S/.${value}`} width={80} />
-                                <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F9FAFB'}}/>
+                            <BarChart data={categoryChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                <XAxis 
+                                    dataKey="name" 
+                                    stroke="#9CA3AF" 
+                                    fontSize={11} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    interval={0}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={60}
+                                />
+                                <YAxis 
+                                    stroke="#9CA3AF" 
+                                    fontSize={11} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    tickFormatter={(value) => `S/.${value}`} 
+                                    width={60} 
+                                />
+                                <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#374151'}}/>
                                 <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                                     {categoryChartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -167,11 +184,18 @@ const ExpenseCalendarChart: React.FC<{
                 </h3>
                  <div style={{ width: '100%', height: 250 }}>
                     <ResponsiveContainer>
-                        <BarChart data={dailyChartData} margin={{ top: 5, right: 0, left: 10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                            <XAxis dataKey="name" stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} interval={0} />
-                            <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `S/.${value}`} width={80} />
-                            <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#F9FAFB'}}/>
+                        <BarChart data={dailyChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} interval={0} />
+                            <YAxis 
+                                stroke="#9CA3AF" 
+                                fontSize={11} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                tickFormatter={(value) => `S/.${value}`} 
+                                width={60} 
+                            />
+                            <Tooltip content={<CustomTooltip chartMode={chartMode} />} cursor={{fill: '#374151'}}/>
                             {/* FIX: Use the hex value from the imported PALETTE for the bar color. */}
                             <Bar dataKey="amount" fill={barColor && PALETTE[barColor] ? PALETTE[barColor].hex : '#3B82F6'} radius={[4, 4, 0, 0]} />
                         </BarChart>
